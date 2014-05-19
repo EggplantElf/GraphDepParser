@@ -294,8 +294,6 @@ def train_MST(conll_file, model_file, epochs = 10):
         edges = dict([(d, sent[d].head) for d in range(1, len(sent))])
         instances.append((edges, edge_vectors))
     model.make_weights()
-    # print 'model size', size(model)
-    print 'instances size', size(instances)
 
     print 'start training ...'
     for epoch in xrange(epochs):
@@ -318,12 +316,8 @@ def train_MST(conll_file, model_file, epochs = 10):
             if i % 500 == 0:
                 print '.',
         print '\nepoch %d done, %6.2f%% correct' % (epoch,100.0*correct/total)
-        print sum(model.weights)
-
-        # print model.weights
 
     model.save(model_file)
-    # print 'model size', size(model)
     print 'number of fearures', len(model.weights)
 
 
@@ -369,6 +363,41 @@ def train_average(conll_file, model_file, epochs = 10):
     model.save(model_file)
     # print 'model size', size(model)
     print 'number of fearures', len(model.weights)
+
+
+def train_MST_average(conll_file, model_file, epochs = 10):
+    instances = []
+    model = Model()
+    for sent in read_sentence(open(conll_file)):
+        edge_vectors = sent.get_vectors(model.register_feature)
+        edges = dict([(d, sent[d].head) for d in range(1, len(sent))])
+        instances.append((edges, edge_vectors))
+    model.make_weights()
+
+    print 'start training ...'
+    q = 0
+    for epoch in xrange(epochs):
+        correct = 0
+        total = 0      
+        for (gold_edges, edge_vectors) in instances:
+            score = sent.get_scores(model, edge_vectors)
+            graph = MST(score)
+            pred_edges = dict([(d,h) for (h, d) in graph.edges()])
+            for d in gold_edges:
+                q += 1
+                gh, ph = gold_edges[d], pred_edges[d]
+                if gh != ph:
+                    model.update(edge_vectors[d][gh], edge_vectors[d][ph], q)
+                else:
+                    correct += 1
+                total += 1
+        print '\nepoch %d done, %6.2f%% correct' % (epoch,100.0*correct/total)
+
+    model.average(q)
+    model.save(model_file)
+    print 'number of fearures', len(model.weights)
+
+
 
 
 def test(conll_file, model_file, output_file):
@@ -510,7 +539,7 @@ if __name__ == '__main__':
     model_file = sys.argv[2]
     test_file = sys.argv[3]
     output_file = sys.argv[4]
-    train_average(train_file, model_file)
+    train_MST_average(train_file, model_file)
 
     test(test_file, model_file, output_file)
     evaluate(output_file)
