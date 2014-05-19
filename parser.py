@@ -1,7 +1,7 @@
-import os, codecs, cPickle, gzip, time
+import sys, os, codecs, cPickle, gzip, time
 import networkx as nx
-import matplotlib.pyplot as plt
-import pygraphviz as pgv
+# import matplotlib.pyplot as plt
+# import pygraphviz as pgv
 
 flag = 0
 
@@ -61,6 +61,7 @@ class Sentence(dict):
         return vectors
 
 
+
 class Model:
     def __init__(self, modelfile = None):
         self.featmap = {}
@@ -69,16 +70,20 @@ class Model:
 
     def make_weights(self):
         self.weights = [0.0 for f in xrange(self.numfeatures())]
-
+        self.delta = [0.0 for f in xrange(self.numfeatures())]
 
     def save(self, modelfile):
-        stream = open(modelfile,'wb')
+        stream = gzip.open(modelfile,'wb')
         cPickle.dump(self.weights,stream,-1)
         cPickle.dump(self.featmap,stream,-1)
         stream.close()
 
+
+    def save_feature(self, featfile):
+        pass
+
     def load(self, modelfile):
-        stream = open(modelfile,'rb')
+        stream = gzip.open(modelfile,'rb')
         self.weights = cPickle.load(stream)
         self.featmap = cPickle.load(stream)
         stream.close()
@@ -105,16 +110,26 @@ class Model:
         # print vectors
         return max(vectors, key = lambda h: self.score(vectors[h]))
 
-    def update(self, gold_feat, pred_feat):
+    def update(self, gold_feat, pred_feat, q = 1):
         # print gold_feat, pred_feat
         # print self.weights
         for i in gold_feat:
             # print self.weights[i-1],
             self.weights[i-1] += 1
+            self.delta[i-1] += q
             # print self.weights[i-1]
         for i in pred_feat:
             self.weights[i-1] -= 1
+            self.delta[i-1] -= q
         # print self.weights
+
+    def average(self, q):
+        # print self.weights[:30]
+        # print self.delta[:30]
+        for i in range(len(self.weights)):
+            self.weights[i] -= self.delta[i] / q
+        # print self.weights[:30]
+
 ####################################################
 
 
@@ -146,21 +161,90 @@ def write_to_file( label, features, fileobj ):
 
 ####################################################
 # ML
+
 def make_features(sent, h, d, map_func):
     features = []
-    # features.append(map_func('head.pos:%s' % sent[h].pos))
-    # features.append(map_func('head.form:%s' % sent[h].form))
-    features.append(map_func('head.pos+dep.pos:%s+%s' % (sent[h].pos, sent[d].pos)))
-    features.append(map_func('head.pos+dep.form:%s+%s' % (sent[h].pos, sent[d].form)))
-    features.append(map_func('head.form+dep.pos:%s+%s' % (sent[h].form, sent[d].pos)))
+
+    nodes = range(1, len(sent))
+    hpos, hform = sent[h].pos, sent[h].form
+    dpos, dform = sent[d].pos, sent[d].form
+    h01pos = (h != 0 and h-1 in nodes) and sent[h-1].pos or '<NA>'
+    h11pos = (h != 0 and h+1 in nodes) and sent[h+1].pos or '<NA>'
+    d01pos = (d != 0 and d-1 in nodes) and sent[d-1].pos or '<NA>'
+    d11pos = (d != 0 and d+1 in nodes) and sent[d+1].pos or '<NA>'
+
+
+    if h < d:
+        features.append(map_func('head.pos~dep.pos:%s~%s' % (hpos, dpos)))
+        features.append(map_func('head.pos~dep.form:%s~%s' % (hpos, dform)))
+        features.append(map_func('head.form~dep.pos:%s~%s' % (hform, dpos)))
+        features.append(map_func('head.form~dep.form:%s~%s' % (hform, dform)))
+    else:
+        features.append(map_func('dep.pos~head.pos:%s~%s' % (dpos, hpos)))
+        features.append(map_func('dep.pos~head.form:%s~%s' % (dpos, hform)))
+        features.append(map_func('dep.form~head.pos:%s~%s' % (dform, hpos)))
+        features.append(map_func('dep.form~head.form:%s~%s' % (dform, hform)))
+
+    # features.append(map_func('head.pos~dep.form~dep.pos:%s~%s~%s' % (hpos, dform, dpos)))
+    # features.append(map_func('head.form~dep.form~dep.pos:%s~%s~%s' % (hform, dform, dpos)))
+    # features.append(map_func('head.form~head.pos~dep.pos:%s~%s~%s' % (hform, hpos, dpos)))
+    # features.append(map_func('head.form~head.pos~dep.form:%s~%s~%s' % (hform, hpos, dform)))
+
+    # features.append(map_func('head.form~head.pos~dep.form~dep.pos:%s~%s~%s~%s' % (hform, hpos, dform, dpos)))
+
+    if h < d:
+        features.append(map_func('head~head+1~dep~dep+1:%s~%s~%s~%s' % (hpos, h11pos, dpos, d11pos)))
+        features.append(map_func('head~head+1~dep~dep-1:%s~%s~%s~%s' % (hpos, h11pos, dpos, d01pos)))
+        features.append(map_func('head~head-1~dep~dep+1:%s~%s~%s~%s' % (hpos, h01pos, dpos, d11pos)))
+        features.append(map_func('head~head-1~dep~dep-1:%s~%s~%s~%s' % (hpos, h01pos, dpos, d01pos)))
+        # features.append(map_func('head~dep+1~dep~dep-1:%s~%s~%s~%s' % (hpos, d11pos, dpos, d01pos)))
+        # features.append(map_func('head+1~head~head-1~dep:%s~%s~%s~%s' % (h11pos, hpos, h01pos, dpos)))
+    else:
+        features.append(map_func('dep~dep+1~head~head+1:%s~%s~%s~%s' % (dpos, d11pos, hpos, h11pos)))
+        features.append(map_func('dep~dep+1~head~head-1:%s~%s~%s~%s' % (dpos, d11pos, hpos, h01pos)))
+        features.append(map_func('dep~dep-1~head~head+1:%s~%s~%s~%s' % (dpos, d01pos, hpos, h11pos)))
+        features.append(map_func('dep~dep-1~head~head-1:%s~%s~%s~%s' % (dpos, d01pos, hpos, h01pos)))
+        # features.append(map_func('dep~head+1~head~head-1:%s~%s~%s~%s' % (dpos, h11pos, hpos, h01pos)))
+        # features.append(map_func('dep+1~dep~dep-1~head:%s~%s~%s~%s' % (d11pos, dpos, d01pos, hpos)))
+
 
     features.append(map_func('offset:%d' % (h - d)))
-    features.append(map_func('between.pos:%s' % '+'.join(map(lambda x: sent[x].pos, range(h+1, d)))))
+    features.append(map_func('h<d~between.pos:%s' % '~'.join(map(lambda x: sent[x].pos, range(h, d+1)))))
+    features.append(map_func('d<h~between.pos:%s' % '~'.join(map(lambda x: sent[x].pos, range(d, h+1)))))
+
+    # slight help
+    # if h < d:
+    #     bpos = map(lambda x: sent[x].pos, range(h+1, d))        
+    # else:
+    #     bpos = map(lambda x: sent[x].pos, range(d+1, h))
+
+    # for pos in bpos:
+    #     f = 'between.pos:%s' % pos
+    #     if f not in features:
+    #         features.append(map_func(f ))
+
+
+    # not helping
+    # if h < d:
+    #     bpos = map(lambda x: sent[x].pos, range(h, d+1))
+    #     if len(bpos) > 5:
+    #         bpos = bpos[:1] + bpos[-4:]
+
+    #     features.append(map_func('h<d~between.pos:%s' % '~'.join(bpos)))
+    # else:
+    #     bpos = map(lambda x: sent[x].pos, range(d, h+1))
+    #     if bpos > 5:
+    #         bpos = bpos[:4] + bpos[-1:]
+    #     features.append(map_func('d<h~between.pos:%s' % '~'.join(bpos)))
+
+
+
 
     return filter(lambda x: x, features)
 
 
-def train(conll_file, model_file, epochs = 10):
+
+def train(conll_file, model_file, epochs = 15):
     instances = []
     model = Model()
     i = 0
@@ -173,6 +257,8 @@ def train(conll_file, model_file, epochs = 10):
             h = sent[d].head # not -1
             instances.append((h, edge_vectors[d]))
     model.make_weights()
+    print 'model size', size(model)
+    print 'instances size', size(instances)
 
     print 'start training ...'
     for epoch in xrange(epochs):
@@ -192,13 +278,97 @@ def train(conll_file, model_file, epochs = 10):
                 print '.',
         print '\nepoch %d done, %6.2f%% correct' % (epoch,100.0*correct/total)
         print sum(model.weights)
+
         # print model.weights
+
     model.save(model_file)
+    print 'model size', size(model)
+    print 'number of fearures', len(model.weights)
 
 
-# use MST in training instead of gready finding head
-def train_MST():
-    pass
+def train_MST(conll_file, model_file, epochs = 10):
+    instances = []
+    model = Model()
+    for sent in read_sentence(open(conll_file)):
+        edge_vectors = sent.get_vectors(model.register_feature)
+        edges = dict([(d, sent[d].head) for d in range(1, len(sent))])
+        instances.append((edges, edge_vectors))
+    model.make_weights()
+    # print 'model size', size(model)
+    print 'instances size', size(instances)
+
+    print 'start training ...'
+    for epoch in xrange(epochs):
+        correct = 0
+        total = 0      
+        i = 0
+        for (gold_edges, edge_vectors) in instances:
+            score = sent.get_scores(model, edge_vectors)
+            graph = MST(score)
+            pred_edges = dict([(d,h) for (h, d) in graph.edges()])
+            for d in gold_edges:
+                gh, ph = gold_edges[d], pred_edges[d]
+                # print gh, ph
+                if gh != ph:
+                    model.update(edge_vectors[d][gh], edge_vectors[d][ph])
+                else:
+                    correct += 1
+                total += 1
+                i += 1
+            if i % 500 == 0:
+                print '.',
+        print '\nepoch %d done, %6.2f%% correct' % (epoch,100.0*correct/total)
+        print sum(model.weights)
+
+        # print model.weights
+
+    model.save(model_file)
+    # print 'model size', size(model)
+    print 'number of fearures', len(model.weights)
+
+
+def train_average(conll_file, model_file, epochs = 10):
+    instances = []
+    model = Model()
+    i = 0
+    for sent in read_sentence(open(conll_file)):
+        i += 1
+        if i % 100 == 0:
+            print '.',
+        edge_vectors = sent.get_vectors(model.register_feature)
+        for d in edge_vectors:
+            h = sent[d].head # not -1
+            instances.append((h, edge_vectors[d]))
+    model.make_weights()
+    # print 'model size', size(model)
+    # print 'instances size', size(instances)
+
+    print 'start training ...'
+
+    q = 0
+    for epoch in xrange(epochs):
+        correct = 0
+        total = 0      
+        i = 0
+        for (gold, head_vectors) in instances:
+            q += 1
+            pred = model.predict(head_vectors)
+            if gold != pred:
+                model.update(head_vectors[gold], head_vectors[pred], q)
+            else:
+                correct += 1
+            total += 1
+            # print correct, total
+            i += 1
+            if i % 1000 == 0:
+                print '.',
+        print '\nepoch %d done, %6.2f%% correct' % (epoch,100.0*correct/total)
+
+        # print model.weights
+    model.average(q)
+    model.save(model_file)
+    # print 'model size', size(model)
+    print 'number of fearures', len(model.weights)
 
 
 def test(conll_file, model_file, output_file):
@@ -287,22 +457,18 @@ def resolve(g, c, s):
 ####################################################
 # helpers
 
-# def show(g):
-#     print g.nodes()
-#     print g.
-
-def plot(g, s):
-    # if mapping:
-    #     g = nx.relabel_nodes(g,mapping)
-    nx.write_dot(g, 'grid.dot')    
-    ga=pgv.AGraph("grid.dot")
-    ga.layout(prog='dot')
-    ga.draw('result.png')
-    os.system('open result.png')
-    for k in s:
-        if k in g.edges():
-            print k, s[k]
-    raw_input()
+# def plot(g, s):
+#     # if mapping:
+#     #     g = nx.relabel_nodes(g,mapping)
+#     nx.write_dot(g, 'grid.dot')    
+#     ga=pgv.AGraph("grid.dot")
+#     ga.layout(prog='dot')
+#     ga.draw('result.png')
+#     os.system('open result.png')
+#     for k in s:
+#         if k in g.edges():
+#             print k, s[k]
+#     raw_input()
 
 def evaluate(conll_file):
     total = 0.0
@@ -325,13 +491,28 @@ def debug(conll_file, model_file):
         print sent.to_str()
 
 
+def size(o):
+    t = type(o)
+    if t in [str, int, float, bool]:
+        return sys.getsizeof(o)
+    elif t in [list, tuple]:
+        return sum([size(i) for i in o])
+    elif t == dict:
+        return sum([size(i) for i in o.values()])
+    else:
+        return sum([size(i) for i in vars(o).values()])
 
 ####################################################
 
 if __name__ == '__main__':
     t0 = time.time()
-    train('../data/english/train/wsj_train.first-5k.conll06', 'tmp.model')
-    test('../data/english/dev/wsj_dev.conll06', 'tmp.model', 'out.conll06')
-    evaluate('out.conll06')
-    # debug('debug.conll06', 'tmp.model')
+    train_file = sys.argv[1]
+    model_file = sys.argv[2]
+    test_file = sys.argv[3]
+    output_file = sys.argv[4]
+    train_average(train_file, model_file)
+
+    test(test_file, model_file, output_file)
+    evaluate(output_file)
+    # # debug('debug.conll06', 'tmp.model')
     print time.time() - t0
