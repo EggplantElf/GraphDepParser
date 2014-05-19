@@ -15,6 +15,7 @@ class Token:
         self.form = entries[1]
         self.lemma = entries[2]
         self.pos = entries[3]
+        self.mor = entries[5]
         self.head = int(entries[6])
         self.label = entries[7]
         self.phead = -1
@@ -29,6 +30,7 @@ class Root(Token):
         self.form = 'ROOT'
         self.lemma = 'ROOT'
         self.pos = 'ROOT'
+        self.mor = 'ROOT'
 
 class Sentence(dict):
     def __init__(self):
@@ -166,8 +168,8 @@ def make_features(sent, h, d, map_func):
     features = []
 
     nodes = range(1, len(sent))
-    hpos, hform = sent[h].pos, sent[h].form
-    dpos, dform = sent[d].pos, sent[d].form
+    hpos, hform, hmor = sent[h].pos, sent[h].form, sent[h].mor
+    dpos, dform, dmor = sent[d].pos, sent[d].form, sent[d].mor
     h01pos = (h != 0 and h-1 in nodes) and sent[h-1].pos or '<NA>'
     h11pos = (h != 0 and h+1 in nodes) and sent[h+1].pos or '<NA>'
     d01pos = (d != 0 and d-1 in nodes) and sent[d-1].pos or '<NA>'
@@ -179,11 +181,16 @@ def make_features(sent, h, d, map_func):
         features.append(map_func('head.pos~dep.form:%s~%s' % (hpos, dform)))
         features.append(map_func('head.form~dep.pos:%s~%s' % (hform, dpos)))
         features.append(map_func('head.form~dep.form:%s~%s' % (hform, dform)))
+        features.append(map_func('head.mor~dep.mor:%s~%s' % (hmor, dmor)))
+        # features.append(map_func('head.mor~head.pos~dep.mor~dep.pos:%s~%s~%s~%s' % (hmor, hpos, dmor, dpos)))
+
     else:
         features.append(map_func('dep.pos~head.pos:%s~%s' % (dpos, hpos)))
         features.append(map_func('dep.pos~head.form:%s~%s' % (dpos, hform)))
         features.append(map_func('dep.form~head.pos:%s~%s' % (dform, hpos)))
         features.append(map_func('dep.form~head.form:%s~%s' % (dform, hform)))
+        features.append(map_func('dep.mor~head.mor:%s~%s' % (dmor, hmor)))
+        # features.append(map_func('dep.mor~dep.pos~head.mor~head.pos:%s~%s~%s~%s' % (dmor, dpos, hmor, hpos)))
 
     # features.append(map_func('head.pos~dep.form~dep.pos:%s~%s~%s' % (hpos, dform, dpos)))
     # features.append(map_func('head.form~dep.form~dep.pos:%s~%s~%s' % (hform, dform, dpos)))
@@ -212,7 +219,12 @@ def make_features(sent, h, d, map_func):
     features.append(map_func('h<d~between.pos:%s' % '~'.join(map(lambda x: sent[x].pos, range(h, d+1)))))
     features.append(map_func('d<h~between.pos:%s' % '~'.join(map(lambda x: sent[x].pos, range(d, h+1)))))
 
-    # slight help
+    # morph
+
+
+
+
+    # tiny help
     # if h < d:
     #     bpos = map(lambda x: sent[x].pos, range(h+1, d))        
     # else:
@@ -286,41 +298,6 @@ def train(conll_file, model_file, epochs = 15):
     print 'number of fearures', len(model.weights)
 
 
-def train_MST(conll_file, model_file, epochs = 10):
-    instances = []
-    model = Model()
-    for sent in read_sentence(open(conll_file)):
-        edge_vectors = sent.get_vectors(model.register_feature)
-        edges = dict([(d, sent[d].head) for d in range(1, len(sent))])
-        instances.append((edges, edge_vectors))
-    model.make_weights()
-
-    print 'start training ...'
-    for epoch in xrange(epochs):
-        correct = 0
-        total = 0      
-        i = 0
-        for (gold_edges, edge_vectors) in instances:
-            score = sent.get_scores(model, edge_vectors)
-            graph = MST(score)
-            pred_edges = dict([(d,h) for (h, d) in graph.edges()])
-            for d in gold_edges:
-                gh, ph = gold_edges[d], pred_edges[d]
-                # print gh, ph
-                if gh != ph:
-                    model.update(edge_vectors[d][gh], edge_vectors[d][ph])
-                else:
-                    correct += 1
-                total += 1
-                i += 1
-            if i % 500 == 0:
-                print '.',
-        print '\nepoch %d done, %6.2f%% correct' % (epoch,100.0*correct/total)
-
-    model.save(model_file)
-    print 'number of fearures', len(model.weights)
-
-
 def train_average(conll_file, model_file, epochs = 10):
     instances = []
     model = Model()
@@ -365,7 +342,7 @@ def train_average(conll_file, model_file, epochs = 10):
     print 'number of fearures', len(model.weights)
 
 
-def train_MST_average(conll_file, model_file, epochs = 10):
+def train_average(conll_file, model_file, epochs = 10):
     instances = []
     model = Model()
     for sent in read_sentence(open(conll_file)):
@@ -414,10 +391,50 @@ def test(conll_file, model_file, output_file):
 ####################################################
 
 
+####################################################
+# Graph class
+class Graph(dict):
+    def __init__(self, score = {}):
+        self.score = score
+        for n in score:
+            self[n] = score[n].keys()
 
+    def add_nodes(self, nlist):
+        for n in nlist:
+            if n not in self:
+                self[n] = []
 
+    def remove_nodes(self, nlist):
+        for n in nlist:
+            self.pop(n, None)
+            for d in self:
+                if n in self[d]:
+                    self[d].remove(n)
 
+    def add_edges(self, elist):
+        for (d, h) in elist:
+            if d not in self:
+                self[d] = []
+            if h not in self[d]:
+                self[d].append(h)
 
+    def remove_edges(self, elist):
+        for (d, h) in elist:
+            if d in self and h in self[d]:
+                self[d].remove(h)
+
+    def subgraph(self, nlist):
+        sub = Graph()
+        sub.score = self.score
+        for n in nlist:
+            sub[n] = []
+            for h in self[n]:
+                if h in nlist:
+                    sub[n].append(h)
+
+        
+
+####################################################
 
 ####################################################
 # Chu-Liu-Edmond Algorithm
@@ -427,7 +444,6 @@ def MST(score):
     go = CLE(g, score, 0)
     go.remove_nodes_from([n for n in go.nodes() if n < 0])
     return go
-
 
 def CLE(g, s, tc):
     # print 'CLE'
@@ -539,9 +555,8 @@ if __name__ == '__main__':
     model_file = sys.argv[2]
     test_file = sys.argv[3]
     output_file = sys.argv[4]
-    train_MST_average(train_file, model_file)
+    train_average(train_file, model_file)
 
     test(test_file, model_file, output_file)
     evaluate(output_file)
-    # # debug('debug.conll06', 'tmp.model')
     print time.time() - t0
