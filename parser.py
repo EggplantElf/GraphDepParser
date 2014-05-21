@@ -287,11 +287,7 @@ def make_features(sent, h, d, map_func):
 def train(conll_file, model_file, epochs = 15):
     instances = []
     model = Model()
-    i = 0
     for sent in read_sentence(open(conll_file)):
-        i += 1
-        if i % 100 == 0:
-            print '.',
         edge_vectors = sent.get_vectors(model.register_feature)
         for d in edge_vectors:
             h = sent[d].head # not -1
@@ -304,7 +300,6 @@ def train(conll_file, model_file, epochs = 15):
     for epoch in xrange(epochs):
         correct = 0
         total = 0      
-        i = 0
         for (gold, head_vectors) in iter(instances):
             pred = model.predict(head_vectors)
             if gold != pred:
@@ -312,10 +307,6 @@ def train(conll_file, model_file, epochs = 15):
             else:
                 correct += 1
             total += 1
-            # print correct, total
-            i += 1
-            if i % 1000 == 0:
-                print '.',
         print '\nepoch %d done, %6.2f%% correct' % (epoch,100.0*correct/total)
         print sum(model.weights)
 
@@ -329,11 +320,7 @@ def train(conll_file, model_file, epochs = 15):
 def train_average(conll_file, model_file, epochs = 10):
     instances = []
     model = Model()
-    i = 0
     for sent in read_sentence(open(conll_file)):
-        i += 1
-        if i % 100 == 0:
-            print '.',
         edge_vectors = sent.get_vectors(model.register_feature)
         for d in edge_vectors:
             h = sent[d].head # not -1
@@ -341,6 +328,7 @@ def train_average(conll_file, model_file, epochs = 10):
     model.make_weights()
     # print 'model size', size(model)
     # print 'instances size', size(instances)
+    print 'number of fearures', len(model.weights)
 
     print 'start training ...'
 
@@ -576,11 +564,6 @@ def size(o):
     else:
         return sum([size(i) for i in vars(o).values()])
 
-def show_weights(model_file, filter_func = None):
-    model = Model(model_file)
-    for f in model.featmap:
-        if not filter_func or filter_func(model.featmap[f]):
-            print '%s\t%6.2f' % (f, model.weights[model.featmap[f]-1])
 
 def train_and_test(argv):
     t0 = time.time()
@@ -608,4 +591,3 @@ def only_test(argv):
 
 if __name__ == '__main__':
     train_and_test(sys.argv)
-    # show_weights(sys.argv[1])
