@@ -254,9 +254,9 @@ def make_features(sent, h, d, map_func):
 
 
     if h < d:
-        bpos = map(lambda x: '%s~%s' % (sent[x].pos, sent[x].mor), range(h+1, d))        
+        bpos = map(lambda x: '%s' % sent[x].pos, range(h+1, d))        
     else:
-        bpos = map(lambda x: '%s~%s' % (sent[x].pos, sent[x].mor), range(d+1, h))
+        bpos = map(lambda x: '%s' % sent[x].pos, range(d+1, h))
 
     # for pos in bpos:
     #     f = 'b.pos~mor:%s' % pos
@@ -264,9 +264,9 @@ def make_features(sent, h, d, map_func):
     #         features.append(map_func(f))
     for pos in bpos:
         if h < d:
-            f = 'h.pos~b.pos~d.pos:%s~%s~%s' % (hpos, bpos[0], dpos)
+            f = 'h.pos~b.pos~d.pos:%s~%s~%s' % (hpos, bpos, dpos)
         else:
-            f = 'd.pos~b.pos~h.pos:%s~%s~%s' % (dpos, bpos[0], hpos)
+            f = 'd.pos~b.pos~h.pos:%s~%s~%s' % (dpos, bpos, hpos)
 
         if f not in features:
             features.append(map_func(f))
@@ -292,39 +292,6 @@ def make_features(sent, h, d, map_func):
 
 
 
-def train(conll_file, model_file, epochs = 15):
-    instances = []
-    model = Model()
-    for sent in read_sentence(open(conll_file)):
-        edge_vectors = sent.get_vectors(model.register_feature)
-        for d in edge_vectors:
-            h = sent[d].h # not -1
-            instances.append((h, edge_vectors[d]))
-    model.make_weights()
-    print 'model size', size(model)
-    print 'instances size', size(instances)
-
-    print 'start training ...'
-    for epoch in xrange(epochs):
-        correct = 0
-        total = 0      
-        for (gold, h_vectors) in iter(instances):
-            pred = model.predict(head_vectors)
-            if gold != pred:
-                model.update(head_vectors[gold], head_vectors[pred])
-            else:
-                correct += 1
-            total += 1
-        print '\nepoch %d done, %6.2f%% correct' % (epoch,100.0*correct/total)
-        print sum(model.weights)
-
-        # print model.weights
-
-    model.save(model_file)
-    print 'model size', size(model)
-    print 'number of fearures', len(model.weights)
-
-
 def train_average(conll_file, model_file, epochs = 10):
     instances = []
     model = Model()
@@ -334,8 +301,6 @@ def train_average(conll_file, model_file, epochs = 10):
             h = sent[d].head # not -1
             instances.append((h, edge_vectors[d]))
     model.make_weights()
-    # print 'model size', size(model)
-    # print 'instances size', size(instances)
     print 'number of fearures', len(model.weights)
 
     print 'start training ...'
@@ -355,10 +320,8 @@ def train_average(conll_file, model_file, epochs = 10):
             total += 1
         print '\nepoch %d done, %6.2f%% correct' % (epoch,100.0*correct/total)
 
-        # print model.weights
     model.average(q)
     model.save(model_file)
-    # print 'model size', size(model)
     print 'number of fearures', len(model.weights)
 
 
