@@ -1,4 +1,4 @@
-import sys, os, codecs, cPickle, gzip, time
+import sys, os, codecs, cPickle, gzip, math, time, random
 import networkx as nx
 # import matplotlib.pyplot as plt
 # import pygraphviz as pgv
@@ -67,6 +67,8 @@ class Sentence(dict):
 class Model:
     def __init__(self, modelfile = None):
         self.featmap = {}
+        self.weights = []
+        self.delta = []
         if modelfile:
             self.load(modelfile)
 
@@ -76,13 +78,25 @@ class Model:
 
     def save(self, modelfile):
         stream = gzip.open(modelfile,'wb')
+        self.drop_zero_features()
         cPickle.dump(self.weights,stream,-1)
         cPickle.dump(self.featmap,stream,-1)
         stream.close()
 
 
-    def save_feature(self, featfile):
-        pass
+    def drop_zero_features(self):
+        new_weight = []
+        new_featmap = {}
+        q = 1
+        for f in self.featmap:
+            i = self.featmap[f]
+            if math.fabs(self.weights[i-1]) > 0.001:
+                new_weight.append(self.weights[i-1])
+                new_featmap[f] = q
+                q += 1
+        self.featmap = new_featmap
+        self.weights = new_weight
+
 
     def load(self, modelfile):
         stream = gzip.open(modelfile,'rb')
@@ -96,6 +110,8 @@ class Model:
     def register_feature(self, feature):
         if feature not in self.featmap:
             self.featmap[feature] = self.numfeatures()+1
+            self.weights.append(0.0)
+            self.delta.append(0.0)
             return self.numfeatures()
         return self.featmap[feature]
 
@@ -171,9 +187,15 @@ def make_features(sent, h, d, map_func):
     hpos, hform, hmor = sent[h].pos, sent[h].form, sent[h].mor
     dpos, dform, dmor = sent[d].pos, sent[d].form, sent[d].mor
     h01pos = (h != 0 and h-1 in nodes) and sent[h-1].pos or '<NA>'
+    h02pos = (h != 0 and h-2 in nodes) and sent[h-2].pos or '<NA>'
     h11pos = (h != 0 and h+1 in nodes) and sent[h+1].pos or '<NA>'
+    h12pos = (h != 0 and h+2 in nodes) and sent[h+2].pos or '<NA>'
+
+
     d01pos = (d != 0 and d-1 in nodes) and sent[d-1].pos or '<NA>'
     d11pos = (d != 0 and d+1 in nodes) and sent[d+1].pos or '<NA>'
+    d11pos = (d != 0 and d+1 in nodes) and sent[d+1].pos or '<NA>'
+    d12pos = (d != 0 and d+2 in nodes) and sent[d+2].pos or '<NA>'
 
 
     if h < d:
@@ -182,7 +204,7 @@ def make_features(sent, h, d, map_func):
         features.append(map_func('head.form~dep.pos:%s~%s' % (hform, dpos)))
         features.append(map_func('head.form~dep.form:%s~%s' % (hform, dform)))
         features.append(map_func('head.mor~dep.mor:%s~%s' % (hmor, dmor)))
-        # features.append(map_func('head.mor~head.pos~dep.mor~dep.pos:%s~%s~%s~%s' % (hmor, hpos, dmor, dpos)))
+        features.append(map_func('head.mor~head.pos~dep.mor~dep.pos:%s~%s~%s~%s' % (hmor, hpos, dmor, dpos)))
 
     else:
         features.append(map_func('dep.pos~head.pos:%s~%s' % (dpos, hpos)))
@@ -190,7 +212,7 @@ def make_features(sent, h, d, map_func):
         features.append(map_func('dep.form~head.pos:%s~%s' % (dform, hpos)))
         features.append(map_func('dep.form~head.form:%s~%s' % (dform, hform)))
         features.append(map_func('dep.mor~head.mor:%s~%s' % (dmor, hmor)))
-        # features.append(map_func('dep.mor~dep.pos~head.mor~head.pos:%s~%s~%s~%s' % (dmor, dpos, hmor, hpos)))
+        features.append(map_func('dep.mor~dep.pos~head.mor~head.pos:%s~%s~%s~%s' % (dmor, dpos, hmor, hpos)))
 
     # features.append(map_func('head.pos~dep.form~dep.pos:%s~%s~%s' % (hpos, dform, dpos)))
     # features.append(map_func('head.form~dep.form~dep.pos:%s~%s~%s' % (hform, dform, dpos)))
@@ -204,6 +226,9 @@ def make_features(sent, h, d, map_func):
         features.append(map_func('head~head+1~dep~dep-1:%s~%s~%s~%s' % (hpos, h11pos, dpos, d01pos)))
         features.append(map_func('head~head-1~dep~dep+1:%s~%s~%s~%s' % (hpos, h01pos, dpos, d11pos)))
         features.append(map_func('head~head-1~dep~dep-1:%s~%s~%s~%s' % (hpos, h01pos, dpos, d01pos)))
+        features.append(map_func('head~head+1~head+2~dep:%s~%s~%s~%s' % (hpos, h11pos, h12pos, dpos))) #new
+        features.append(map_func('head~head-1~head-2~dep:%s~%s~%s~%s' % (hpos, h01pos, h02pos, dpos))) #new
+
         # features.append(map_func('head~dep+1~dep~dep-1:%s~%s~%s~%s' % (hpos, d11pos, dpos, d01pos)))
         # features.append(map_func('head+1~head~head-1~dep:%s~%s~%s~%s' % (h11pos, hpos, h01pos, dpos)))
     else:
@@ -211,6 +236,8 @@ def make_features(sent, h, d, map_func):
         features.append(map_func('dep~dep+1~head~head-1:%s~%s~%s~%s' % (dpos, d11pos, hpos, h01pos)))
         features.append(map_func('dep~dep-1~head~head+1:%s~%s~%s~%s' % (dpos, d01pos, hpos, h11pos)))
         features.append(map_func('dep~dep-1~head~head-1:%s~%s~%s~%s' % (dpos, d01pos, hpos, h01pos)))
+        features.append(map_func('dep~head~head+1~head+2:%s~%s~%s~%s' % (dpos, hpos, h11pos, h12pos))) #new
+        features.append(map_func('dep~head~head-1~head-2:%s~%s~%s~%s' % (dpos, hpos, h01pos, h02pos))) #new
         # features.append(map_func('dep~head+1~head~head-1:%s~%s~%s~%s' % (dpos, h11pos, hpos, h01pos)))
         # features.append(map_func('dep+1~dep~dep-1~head:%s~%s~%s~%s' % (d11pos, dpos, d01pos, hpos)))
 
@@ -218,22 +245,23 @@ def make_features(sent, h, d, map_func):
     features.append(map_func('offset:%d' % (h - d)))
     features.append(map_func('h<d~between.pos:%s' % '~'.join(map(lambda x: sent[x].pos, range(h, d+1)))))
     features.append(map_func('d<h~between.pos:%s' % '~'.join(map(lambda x: sent[x].pos, range(d, h+1)))))
+    # features.append(map_func('h<d~between.pos~mor:%s' % '~'.join(map(lambda x: '%s~%s' % (sent[x].pos, sent[x].mor), range(h, d+1)))))
+    # features.append(map_func('d<h~between.pos~mor:%s' % '~'.join(map(lambda x: '%s~%s' % (sent[x].pos, sent[x].mor), range(d, h+1)))))
 
     # morph
 
 
 
 
-    # tiny help
-    # if h < d:
-    #     bpos = map(lambda x: sent[x].pos, range(h+1, d))        
-    # else:
-    #     bpos = map(lambda x: sent[x].pos, range(d+1, h))
+    if h < d:
+        bpos = map(lambda x: '%s~%s' % (sent[x].pos, sent[x].mor), range(h+1, d))        
+    else:
+        bpos = map(lambda x: '%s~%s' % (sent[x].pos, sent[x].mor), range(d+1, h))
 
-    # for pos in bpos:
-    #     f = 'between.pos:%s' % pos
-    #     if f not in features:
-    #         features.append(map_func(f ))
+    for pos in bpos:
+        f = 'between.pos~mor:%s' % pos
+        if f not in features:
+            features.append(map_func(f))
 
 
     # not helping
@@ -277,7 +305,7 @@ def train(conll_file, model_file, epochs = 15):
         correct = 0
         total = 0      
         i = 0
-        for (gold, head_vectors) in instances:
+        for (gold, head_vectors) in iter(instances):
             pred = model.predict(head_vectors)
             if gold != pred:
                 model.update(head_vectors[gold], head_vectors[pred])
@@ -320,8 +348,10 @@ def train_average(conll_file, model_file, epochs = 10):
     for epoch in xrange(epochs):
         correct = 0
         total = 0      
-        i = 0
-        for (gold, head_vectors) in instances:
+        print 'start shuffle'
+        random.shuffle(instances)
+        print 'done shuffle'
+        for (gold, head_vectors) in iter(instances):
             q += 1
             pred = model.predict(head_vectors)
             if gold != pred:
@@ -329,10 +359,6 @@ def train_average(conll_file, model_file, epochs = 10):
             else:
                 correct += 1
             total += 1
-            # print correct, total
-            i += 1
-            if i % 1000 == 0:
-                print '.',
         print '\nepoch %d done, %6.2f%% correct' % (epoch,100.0*correct/total)
 
         # print model.weights
@@ -342,7 +368,7 @@ def train_average(conll_file, model_file, epochs = 10):
     print 'number of fearures', len(model.weights)
 
 
-def train_average(conll_file, model_file, epochs = 10):
+def train_MST(conll_file, model_file, epochs = 10):
     instances = []
     model = Model()
     for sent in read_sentence(open(conll_file)):
@@ -356,7 +382,7 @@ def train_average(conll_file, model_file, epochs = 10):
     for epoch in xrange(epochs):
         correct = 0
         total = 0      
-        for (gold_edges, edge_vectors) in instances:
+        for (gold_edges, edge_vectors) in iter(instances):
             score = sent.get_scores(model, edge_vectors)
             graph = MST(score)
             pred_edges = dict([(d,h) for (h, d) in graph.edges()])
@@ -461,6 +487,9 @@ def CLE(g, s, tc):
         y = CLE(gc, s, tc)
         return resolve(y, c, s)
 
+
+
+# change sum([]) to sum()
 def contract(g, c, s, tc):
     # print 'contract'
     g.remove_nodes_from(c)
@@ -547,16 +576,36 @@ def size(o):
     else:
         return sum([size(i) for i in vars(o).values()])
 
-####################################################
+def show_weights(model_file, filter_func = None):
+    model = Model(model_file)
+    for f in model.featmap:
+        if not filter_func or filter_func(model.featmap[f]):
+            print '%s\t%6.2f' % (f, model.weights[model.featmap[f]-1])
 
-if __name__ == '__main__':
+def train_and_test(argv):
     t0 = time.time()
-    train_file = sys.argv[1]
-    model_file = sys.argv[2]
-    test_file = sys.argv[3]
-    output_file = sys.argv[4]
+    train_file = argv[1]
+    model_file = argv[2]
+    test_file = argv[3]
+    output_file = argv[4]
     train_average(train_file, model_file)
 
     test(test_file, model_file, output_file)
     evaluate(output_file)
     print time.time() - t0
+
+
+def only_test(argv):
+    model_file = argv[1]
+    test_file = argv[2]
+    output_file = argv[3]
+    test(test_file, model_file, output_file)
+    evaluate(output_file)
+
+
+
+####################################################
+
+if __name__ == '__main__':
+    train_and_test(sys.argv)
+    # show_weights(sys.argv[1])
