@@ -199,52 +199,52 @@ def make_features(sent, h, d, map_func):
 
 
     if h < d:
-        features.append(map_func('head.pos~dep.pos:%s~%s' % (hpos, dpos)))
-        features.append(map_func('head.pos~dep.form:%s~%s' % (hpos, dform)))
-        features.append(map_func('head.form~dep.pos:%s~%s' % (hform, dpos)))
-        features.append(map_func('head.form~dep.form:%s~%s' % (hform, dform)))
-        features.append(map_func('head.mor~dep.mor:%s~%s' % (hmor, dmor)))
-        features.append(map_func('head.mor~head.pos~dep.mor~dep.pos:%s~%s~%s~%s' % (hmor, hpos, dmor, dpos)))
+        features.append(map_func('h.pos~d.pos:%s~%s' % (hpos, dpos)))
+        features.append(map_func('h.pos~d.form:%s~%s' % (hpos, dform)))
+        features.append(map_func('h.form~d.pos:%s~%s' % (hform, dpos)))
+        features.append(map_func('h.form~d.form:%s~%s' % (hform, dform)))
+        features.append(map_func('h.mor~d.mor:%s~%s' % (hmor, dmor)))
+        features.append(map_func('h.mor~h.pos~d.mor~d.pos:%s~%s~%s~%s' % (hmor, hpos, dmor, dpos)))
 
     else:
-        features.append(map_func('dep.pos~head.pos:%s~%s' % (dpos, hpos)))
-        features.append(map_func('dep.pos~head.form:%s~%s' % (dpos, hform)))
-        features.append(map_func('dep.form~head.pos:%s~%s' % (dform, hpos)))
-        features.append(map_func('dep.form~head.form:%s~%s' % (dform, hform)))
-        features.append(map_func('dep.mor~head.mor:%s~%s' % (dmor, hmor)))
-        features.append(map_func('dep.mor~dep.pos~head.mor~head.pos:%s~%s~%s~%s' % (dmor, dpos, hmor, hpos)))
+        features.append(map_func('d.pos~h.pos:%s~%s' % (dpos, hpos)))
+        features.append(map_func('d.pos~h.form:%s~%s' % (dpos, hform)))
+        features.append(map_func('d.form~h.pos:%s~%s' % (dform, hpos)))
+        features.append(map_func('d.form~h.form:%s~%s' % (dform, hform)))
+        features.append(map_func('d.mor~h.mor:%s~%s' % (dmor, hmor)))
+        features.append(map_func('d.mor~d.pos~h.mor~h.pos:%s~%s~%s~%s' % (dmor, dpos, hmor, hpos)))
 
-    # features.append(map_func('head.pos~dep.form~dep.pos:%s~%s~%s' % (hpos, dform, dpos)))
-    # features.append(map_func('head.form~dep.form~dep.pos:%s~%s~%s' % (hform, dform, dpos)))
-    # features.append(map_func('head.form~head.pos~dep.pos:%s~%s~%s' % (hform, hpos, dpos)))
-    # features.append(map_func('head.form~head.pos~dep.form:%s~%s~%s' % (hform, hpos, dform)))
+    # features.append(map_func('h.pos~d.form~d.pos:%s~%s~%s' % (hpos, dform, dpos)))
+    # features.append(map_func('h.form~d.form~d.pos:%s~%s~%s' % (hform, dform, dpos)))
+    # features.append(map_func('h.form~h.pos~d.pos:%s~%s~%s' % (hform, hpos, dpos)))
+    # features.append(map_func('h.form~h.pos~d.form:%s~%s~%s' % (hform, hpos, dform)))
 
-    # features.append(map_func('head.form~head.pos~dep.form~dep.pos:%s~%s~%s~%s' % (hform, hpos, dform, dpos)))
+    # features.append(map_func('h.form~h.pos~d.form~d.pos:%s~%s~%s~%s' % (hform, hpos, dform, dpos)))
 
     if h < d:
-        features.append(map_func('head~head+1~dep~dep+1:%s~%s~%s~%s' % (hpos, h11pos, dpos, d11pos)))
-        features.append(map_func('head~head+1~dep~dep-1:%s~%s~%s~%s' % (hpos, h11pos, dpos, d01pos)))
-        features.append(map_func('head~head-1~dep~dep+1:%s~%s~%s~%s' % (hpos, h01pos, dpos, d11pos)))
-        features.append(map_func('head~head-1~dep~dep-1:%s~%s~%s~%s' % (hpos, h01pos, dpos, d01pos)))
-        features.append(map_func('head~head+1~head+2~dep:%s~%s~%s~%s' % (hpos, h11pos, h12pos, dpos))) #new
-        features.append(map_func('head~head-1~head-2~dep:%s~%s~%s~%s' % (hpos, h01pos, h02pos, dpos))) #new
+        features.append(map_func('h~h+1~d~d+1:%s~%s~%s~%s' % (hpos, h11pos, dpos, d11pos)))
+        features.append(map_func('h~h+1~d~d-1:%s~%s~%s~%s' % (hpos, h11pos, dpos, d01pos)))
+        features.append(map_func('h~h-1~d~d+1:%s~%s~%s~%s' % (hpos, h01pos, dpos, d11pos)))
+        features.append(map_func('h~h-1~d~d-1:%s~%s~%s~%s' % (hpos, h01pos, dpos, d01pos)))
+        features.append(map_func('h~h+1~h+2~d:%s~%s~%s~%s' % (hpos, h11pos, h12pos, dpos))) #new
+        features.append(map_func('h~h-1~h-2~d:%s~%s~%s~%s' % (hpos, h01pos, h02pos, dpos))) #new
 
-        # features.append(map_func('head~dep+1~dep~dep-1:%s~%s~%s~%s' % (hpos, d11pos, dpos, d01pos)))
-        # features.append(map_func('head+1~head~head-1~dep:%s~%s~%s~%s' % (h11pos, hpos, h01pos, dpos)))
+        # features.append(map_func('h~d+1~d~d-1:%s~%s~%s~%s' % (hpos, d11pos, dpos, d01pos)))
+        # features.append(map_func('h+1~h~h-1~d:%s~%s~%s~%s' % (h11pos, hpos, h01pos, dpos)))
     else:
-        features.append(map_func('dep~dep+1~head~head+1:%s~%s~%s~%s' % (dpos, d11pos, hpos, h11pos)))
-        features.append(map_func('dep~dep+1~head~head-1:%s~%s~%s~%s' % (dpos, d11pos, hpos, h01pos)))
-        features.append(map_func('dep~dep-1~head~head+1:%s~%s~%s~%s' % (dpos, d01pos, hpos, h11pos)))
-        features.append(map_func('dep~dep-1~head~head-1:%s~%s~%s~%s' % (dpos, d01pos, hpos, h01pos)))
-        features.append(map_func('dep~head~head+1~head+2:%s~%s~%s~%s' % (dpos, hpos, h11pos, h12pos))) #new
-        features.append(map_func('dep~head~head-1~head-2:%s~%s~%s~%s' % (dpos, hpos, h01pos, h02pos))) #new
-        # features.append(map_func('dep~head+1~head~head-1:%s~%s~%s~%s' % (dpos, h11pos, hpos, h01pos)))
-        # features.append(map_func('dep+1~dep~dep-1~head:%s~%s~%s~%s' % (d11pos, dpos, d01pos, hpos)))
+        features.append(map_func('d~d+1~h~h+1:%s~%s~%s~%s' % (dpos, d11pos, hpos, h11pos)))
+        features.append(map_func('d~d+1~h~h-1:%s~%s~%s~%s' % (dpos, d11pos, hpos, h01pos)))
+        features.append(map_func('d~d-1~h~h+1:%s~%s~%s~%s' % (dpos, d01pos, hpos, h11pos)))
+        features.append(map_func('d~d-1~h~h-1:%s~%s~%s~%s' % (dpos, d01pos, hpos, h01pos)))
+        features.append(map_func('d~h~h+1~h+2:%s~%s~%s~%s' % (dpos, hpos, h11pos, h12pos))) #new
+        features.append(map_func('d~h~h-1~h-2:%s~%s~%s~%s' % (dpos, hpos, h01pos, h02pos))) #new
+        # features.append(map_func('d~h+1~h~h-1:%s~%s~%s~%s' % (dpos, h11pos, hpos, h01pos)))
+        # features.append(map_func('d+1~d~d-1~h:%s~%s~%s~%s' % (d11pos, dpos, d01pos, hpos)))
 
 
     features.append(map_func('offset:%d' % (h - d)))
-    features.append(map_func('h<d~between.pos:%s' % '~'.join(map(lambda x: sent[x].pos, range(h, d+1)))))
-    features.append(map_func('d<h~between.pos:%s' % '~'.join(map(lambda x: sent[x].pos, range(d, h+1)))))
+    features.append(map_func('h<d~b.pos:%s' % '~'.join(map(lambda x: sent[x].pos, range(h, d+1)))))
+    features.append(map_func('d<h~b.pos:%s' % '~'.join(map(lambda x: sent[x].pos, range(d, h+1)))))
     # features.append(map_func('h<d~between.pos~mor:%s' % '~'.join(map(lambda x: '%s~%s' % (sent[x].pos, sent[x].mor), range(h, d+1)))))
     # features.append(map_func('d<h~between.pos~mor:%s' % '~'.join(map(lambda x: '%s~%s' % (sent[x].pos, sent[x].mor), range(d, h+1)))))
 
@@ -258,8 +258,16 @@ def make_features(sent, h, d, map_func):
     else:
         bpos = map(lambda x: '%s~%s' % (sent[x].pos, sent[x].mor), range(d+1, h))
 
+    # for pos in bpos:
+    #     f = 'b.pos~mor:%s' % pos
+    #     if f not in features:
+    #         features.append(map_func(f))
     for pos in bpos:
-        f = 'between.pos~mor:%s' % pos
+        if h < d:
+            f = 'h.pos~b.pos~d.pos:%s~%s~%s' % (hpos, bpos[0], dpos)
+        else:
+            f = 'd.pos~b.pos~h.pos:%s~%s~%s' % (dpos, bpos[0], hpos)
+
         if f not in features:
             features.append(map_func(f))
 
@@ -290,7 +298,7 @@ def train(conll_file, model_file, epochs = 15):
     for sent in read_sentence(open(conll_file)):
         edge_vectors = sent.get_vectors(model.register_feature)
         for d in edge_vectors:
-            h = sent[d].head # not -1
+            h = sent[d].h # not -1
             instances.append((h, edge_vectors[d]))
     model.make_weights()
     print 'model size', size(model)
@@ -300,7 +308,7 @@ def train(conll_file, model_file, epochs = 15):
     for epoch in xrange(epochs):
         correct = 0
         total = 0      
-        for (gold, head_vectors) in iter(instances):
+        for (gold, h_vectors) in iter(instances):
             pred = model.predict(head_vectors)
             if gold != pred:
                 model.update(head_vectors[gold], head_vectors[pred])
@@ -336,9 +344,7 @@ def train_average(conll_file, model_file, epochs = 10):
     for epoch in xrange(epochs):
         correct = 0
         total = 0      
-        print 'start shuffle'
         random.shuffle(instances)
-        print 'done shuffle'
         for (gold, head_vectors) in iter(instances):
             q += 1
             pred = model.predict(head_vectors)
