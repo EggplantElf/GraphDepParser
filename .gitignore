@@ -2,5 +2,7 @@
 *.dot
 *.txt
 *.model
+*.parser
+*.labeler
 *.png
 *.pyc
