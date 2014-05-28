@@ -7,7 +7,7 @@ def evaluate(conll_file):
         if line.strip():
             items = line.split('\t')
             total += 1
-            if items[6] == items[8]:
+            if items[7].strip() == items[9].strip():
                 correct += 1
     print 'accuracy: %6.2f%%' % (100 * correct/total)
 

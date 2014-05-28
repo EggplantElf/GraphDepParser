@@ -1,4 +1,4 @@
-import math
+import math, os
 
 
 def read(filename):
@@ -54,14 +54,32 @@ def pmi(hd_arcs, dh_arcs):
     for t in sorted(filter(lambda x: x[3] > 50, result), key = lambda x: x[2], reverse = True):
         print '%s\t%s\t%.2f\t%d' % t
 
+def find_best_edges(hd_arcs, dh_arcs):
+    w = raw_input('input a word\n')
+    print 
+    print '-' * 10
+    print 'relevant deps:'
+    if w in hd_arcs:
+        hds = sorted(hd_arcs[w], key = lambda x: hd_arcs[w][x], reverse = True)
+        if len(hds) > 5:
+            hds = hds[:5]
+        print '\n'.join(hds)
 
+    print 
+    print '-' * 10
+    print 'relevant heads'
+    if w in dh_arcs:
+        dhs = sorted(dh_arcs[w], key = lambda x: dh_arcs[w][x], reverse = True)
+        if len(dhs) > 5:
+            dhs = dhs[:5]
+        print '\n'.join(dhs)
+    raw_input()
+    os.system('clear')
 
 if __name__ == '__main__':
     hd_arcs, dh_arcs =read('../data/english/train/wsj_train.conll06')
-    pmi(hd_arcs, dh_arcs)
-    # print hd_arcs
-    # print dh_arcs
-
+    while True:
+        find_best_edges(hd_arcs, dh_arcs)
 
 
 
