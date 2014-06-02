@@ -1,4 +1,4 @@
-import sys, os, cPickle, gzip, math, time, random
+import sys, time
 from model import *
 from sentence import *
 from parser import *
@@ -8,6 +8,7 @@ def train(conll_file, parser_model_file, labeler_model_file):
     parser = Parser()
     labeler = Labeler()
     parser.train(conll_file, parser_model_file)
+    del parser # do I need that?
     labeler.train(conll_file, labeler_model_file)
 
 def test(conll_file, parser_model_file, labeler_model_file, output_file):
@@ -30,10 +31,10 @@ def evaluate(conll_file):
             total += 1
             if items[6] == items[8]:
                 correct_head += 1
-            if items[7] == items[9]:
-                correct_label += 1
-    print 'head acc: %6.2f%%' % (100 * correct_head/total)
-    print 'label acc: %6.2f%%' % (100 * correct_label/total)
+                if items[7] == items[9]:
+                    correct_label += 1
+    print 'UAS: %6.2f%%' % (100 * correct_head/total)
+    print 'LAS: %6.2f%%' % (100 * correct_label/total)
 
 ####################################################
 

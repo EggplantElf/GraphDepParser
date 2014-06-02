@@ -1,5 +1,4 @@
 import gzip, cPickle, math
-from feature import make_features
 # from sentence import *
 
 class ParserModel:
@@ -16,13 +15,13 @@ class ParserModel:
 
     def save(self, modelfile):
         stream = gzip.open(modelfile,'wb')
-        self.drop_zero_features()
+        self.__drop_zero_features()
         cPickle.dump(self.weights,stream,-1)
         cPickle.dump(self.featmap,stream,-1)
         stream.close()
 
 
-    def drop_zero_features(self):
+    def __drop_zero_features(self):
         new_weight = []
         new_featmap = {}
         q = 1
@@ -100,7 +99,8 @@ class LabelerModel:
         cPickle.dump(self.label_revmap, stream, -1)
         stream.close()
 
-    def drop_zero_features(self):
+# need modify
+    def __drop_zero_features(self):
         new_weight = []
         new_featmap = {}
         q = 1

@@ -1,5 +1,5 @@
 from model import ParserModel
-from feature import make_features
+from feature import make_features_for_parser
 from sentence import *
 from MST import *
 
@@ -16,7 +16,7 @@ class Parser:
                 vectors = {}
                 for h in range(0, len(sent)):
                     if h != d:
-                        vectors[h] = make_features(sent, h, d, map_func)
+                        vectors[h] = make_features_for_parser(sent, h, d, map_func)
                 instances.append((head, vectors))
         model.make_weights()
         return instances
@@ -26,7 +26,7 @@ class Parser:
         for d in range(1, len(sent)):
             for h in range(len(sent)):
                 if h != d:
-                    vector = make_features(sent, h, d, map_func)
+                    vector = make_features_for_parser(sent, h, d, map_func)
                     score[(h,d)] = (model.score(vector), [(h,d)])
         return score
 

@@ -1,4 +1,3 @@
-from feature import make_features
 
 
 class Token:
@@ -42,7 +41,7 @@ class Sentence(dict):
 
 
 
-def read_sentence(filestream, limit = 100):
+def read_sentence(filestream, limit = 0):
     print 'reading sentences ...'
     sentence = Sentence()
     i = 1
