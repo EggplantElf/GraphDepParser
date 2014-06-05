@@ -10,7 +10,7 @@ class Labeler:
     def __get_instances(self, model, conll_file, map_func):
         instances = []
         for sent in read_sentence(open(conll_file)):
-            for d in range(1, len(sent)):
+            for d in xrange(1, len(sent)):
                 label = model.register_label(sent[d].label)
                 vector = make_features_for_labeler(sent, sent[d].head, d, model.register_feature)
                 instances.append((label, vector))
@@ -41,7 +41,7 @@ class Labeler:
         model.save(model_file)
 
     def predict(self, sent):
-        for d in range(1, len(sent)):
+        for d in xrange(1, len(sent)):
             if sent[d].phead != '_':
                 h = sent[d].phead
             else:

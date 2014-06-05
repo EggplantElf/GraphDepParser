@@ -1,4 +1,5 @@
 import gzip, cPickle, math
+from itertools import imap
 # from sentence import *
 
 class ParserModel:
@@ -49,15 +50,22 @@ class ParserModel:
             self.featmap[feature] = self.numfeatures()+1
             self.weights.append(0.0)
             self.delta.append(0.0)
+
             return self.numfeatures()
-        return self.featmap[feature]
+        else:
+            return self.featmap[feature]
 
     def map_feature(self, feature):
         return self.featmap.get(feature,None)
 
-    def score(self, vector):
-        return sum(map(lambda x: self.weights[x - 1], vector))
+    def __select_weight(self, x):
+        # avoid overuse of lambda
+        return self.weights[x - 1]
 
+    def score(self, vector):
+        return sum(imap(self.__select_weight, vector))
+
+    # should be more generalized, and don't use lambda
     def predict(self, vectors):
         return max(vectors, key = lambda h: self.score(vectors[h]))
 
@@ -70,7 +78,7 @@ class ParserModel:
             self.delta[i-1] -= q
 
     def average(self, q):
-        for i in range(len(self.weights)):
+        for i in xrange(len(self.weights)):
             self.weights[i] -= self.delta[i] / q
 
 
@@ -127,7 +135,7 @@ class LabelerModel:
     def register_feature(self, feature):
         if feature not in self.featmap:
             self.featmap[feature] = self.numfeatures()+1
-            for i in range(len(self.weights)):
+            for i in xrange(len(self.weights)):
                 self.weights[i].append(0.0)
                 self.delta[i].append(0.0)
             return self.numfeatures()
@@ -155,13 +163,13 @@ class LabelerModel:
         return self.label_revmap.get(label_int, None)
 
     def score(self, vector):
-        return sum(map(lambda x: self.weights[x - 1], vector))
+        return sum(imap(lambda x: self.weights[x - 1], vector))
 
     def predict(self, vector):
         ans = 0
         maxsum = -9999
-        for i in range(len(self.labelmap)):
-            s = sum(map(lambda x: self.weights[i][x-1], vector))
+        for i in xrange(len(self.labelmap)):
+            s = sum(imap(lambda x: self.weights[i][x-1], vector))
             if s > maxsum:
                 maxsum = s
                 ans = i + 1
@@ -177,6 +185,6 @@ class LabelerModel:
             self.delta[pred-1][i-1] -= q
 
     def average(self, q):
-        for i in range(len(self.weights)):
-            for j in range(len(self.weights[i])):
+        for i in xrange(len(self.weights)):
+            for j in xrange(len(self.weights[i])):
                 self.weights[i][j] -= self.delta[i][j] / q

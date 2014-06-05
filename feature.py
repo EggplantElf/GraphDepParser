@@ -33,7 +33,7 @@ def make_features_for_labeler(sent, h, d, map_func):
 
 
 
-    return filter(lambda x: x, features)
+    return filter(None, features)
 
 
 
@@ -167,4 +167,43 @@ def make_features_for_parser(sent, h, d, map_func):
     #         bpos = bpos[:4] + bpos[-1:]
     #     features.append(map_func('d<h~between.pos:%s' % '~'.join(bpos)))
 
-    return filter(lambda x: x, features)
+    return filter(None, features)
+
+
+def make_features_for_easy_parser(sent, h, d, map_func):
+    features = []
+
+    nodes = range(1, len(sent))
+    hpos, hform, hmor = sent[h].pos, sent[h].form, sent[h].mor
+    dpos, dform, dmor = sent[d].pos, sent[d].form, sent[d].mor
+    h01pos = (h != 0 and h-1 in nodes) and sent[h-1].pos or '<NA>'
+    h02pos = (h != 0 and h-2 in nodes) and sent[h-2].pos or '<NA>'
+    h11pos = (h != 0 and h+1 in nodes) and sent[h+1].pos or '<NA>'
+    h12pos = (h != 0 and h+2 in nodes) and sent[h+2].pos or '<NA>'
+
+
+    d01pos = (d != 0 and d-1 in nodes) and sent[d-1].pos or '<NA>'
+    d02pos = (d != 0 and d-2 in nodes) and sent[d-2].pos or '<NA>'
+    d11pos = (d != 0 and d+1 in nodes) and sent[d+1].pos or '<NA>'
+    d12pos = (d != 0 and d+2 in nodes) and sent[d+2].pos or '<NA>'
+
+    if h < d:
+        features.append(map_func('h.pos~d.pos:%s~%s' % (hpos, dpos)))
+        features.append(map_func('h.pos~d.form:%s~%s' % (hpos, dform)))
+        features.append(map_func('h.form~d.pos:%s~%s' % (hform, dpos)))
+        # features.append(map_func('h.form~d.form:%s~%s' % (hform, dform)))
+        # features.append(map_func('h.mor~d.mor:%s~%s' % (hmor, dmor)))
+        # features.append(map_func('h.mor~h.pos~d.mor~d.pos:%s~%s~%s~%s' % (hmor, hpos, dmor, dpos)))
+
+    else:
+        features.append(map_func('d.pos~h.pos:%s~%s' % (dpos, hpos)))
+        features.append(map_func('d.pos~h.form:%s~%s' % (dpos, hform)))
+        features.append(map_func('d.form~h.pos:%s~%s' % (dform, hpos)))
+        # features.append(map_func('d.form~h.form:%s~%s' % (dform, hform)))
+        # features.append(map_func('d.mor~h.mor:%s~%s' % (dmor, hmor)))
+        # features.append(map_func('d.mor~d.pos~h.mor~h.pos:%s~%s~%s~%s' % (dmor, dpos, hmor, hpos)))
+
+
+
+    return filter(None, features)
+

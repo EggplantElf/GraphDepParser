@@ -11,10 +11,10 @@ class Parser:
     def __get_instances(self, model, conll_file, map_func):
         instances = []
         for sent in read_sentence(open(conll_file)):
-            for d in range(1, len(sent)):
+            for d in xrange(1, len(sent)):
                 head = sent[d].head
                 vectors = {}
-                for h in range(0, len(sent)):
+                for h in xrange(0, len(sent)):
                     if h != d:
                         vectors[h] = make_features_for_parser(sent, h, d, map_func)
                 instances.append((head, vectors))
@@ -23,8 +23,8 @@ class Parser:
 
     def __get_scores_for_MST(self, sent, model, map_func):
         score = {}
-        for d in range(1, len(sent)):
-            for h in range(len(sent)):
+        for d in xrange(1, len(sent)):
+            for h in xrange(len(sent)):
                 if h != d:
                     vector = make_features_for_parser(sent, h, d, map_func)
                     score[(h,d)] = (model.score(vector), [(h,d)])

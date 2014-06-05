@@ -3,6 +3,7 @@ from model import *
 from sentence import *
 from parser import *
 from labeler import *
+from easy_first import *
 
 def train(conll_file, parser_model_file, labeler_model_file):
     parser = Parser()
@@ -36,18 +37,25 @@ def evaluate(conll_file):
     print 'UAS: %6.2f%%' % (100 * correct_head/total)
     print 'LAS: %6.2f%%' % (100 * correct_label/total)
 
+def easy_demo(conll_file, parser_model_file):
+    parser = EasyFirstParser()
+    parser.train(conll_file, parser_model_file)
+
+
+
 ####################################################
 
 if __name__ == '__main__':
-    train_file = sys.argv[1]
-    parser_model_file = sys.argv[2]
-    labeler_model_file = sys.argv[3]
-    test_file = sys.argv[4]
-    output_file = sys.argv[5]
+    # train_file = sys.argv[1]
+    # parser_model_file = sys.argv[2]
+    # labeler_model_file = sys.argv[3]
+    # test_file = sys.argv[4]
+    # output_file = sys.argv[5]
  
 
-    t0 = time.time()
-    train(train_file, parser_model_file, labeler_model_file)
-    test(test_file, parser_model_file, labeler_model_file, output_file)
-    evaluate(output_file)
-    print 'time used:', time.time() - t0
+    # t0 = time.time()
+    # train(train_file, parser_model_file, labeler_model_file)
+    # test(test_file, parser_model_file, labeler_model_file, output_file)
+    # evaluate(output_file)
+    # print 'time used:', time.time() - t0
+    easy_demo(sys.argv[1], sys.argv[2])

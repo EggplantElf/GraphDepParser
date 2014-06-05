@@ -25,25 +25,39 @@ class Root(Token):
         self.pos = 'ROOT'
         self.mor = 'ROOT'
 
-class Sentence(dict):
+# class Sentence(dict):
+#     def __init__(self):
+#         self[0] = Root()
+
+#     def add_token(self, token):
+#         self[len(self)] = token
+
+#     def add_heads(self, g):
+#         for (h, d) in g.edges():
+#             self[d].phead = h
+
+#     def to_str(self):
+#         return '\n'.join([self[i].to_str() for i in range(1, len(self))]) + '\n'
+
+class Sentence(list):
     def __init__(self):
-        self[0] = Root()
+        self.append(Root())
 
     def add_token(self, token):
-        self[len(self)] = token
+        self.append(token)
 
     def add_heads(self, g):
         for (h, d) in g.edges():
             self[d].phead = h
 
     def to_str(self):
-        return '\n'.join([self[i].to_str() for i in range(1, len(self))]) + '\n'
-
+        return '\n'.join(self[i].to_str() for i in self[1:]) + '\n'
 
 
 def read_sentence(filestream, limit = 0):
     print 'reading sentences ...'
     sentence = Sentence()
+    # sentence.append(Root())
     i = 1
     for line in filestream:
         line = line.rstrip()
