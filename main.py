@@ -5,17 +5,9 @@ from parser import *
 from labeler import *
 from easy_first import *
 
-def train(conll_file, parser_model_file, labeler_model_file):
-    parser = Parser()
-    labeler = Labeler()
-    parser.train(conll_file, parser_model_file)
-    del parser # do I need that?
-    labeler.train(conll_file, labeler_model_file)
 
-def test(conll_file, parser_model_file, labeler_model_file, output_file):
+def test(conll_file, parser, labeler, output_file):
     outstream = open(output_file,'w')
-    parser = Parser(parser_model_file)
-    labeler = Labeler(labeler_model_file)
     for sent in read_sentence(open(conll_file)):
         parser.predict(sent)
         labeler.predict(sent)
@@ -37,25 +29,45 @@ def evaluate(conll_file):
     print 'UAS: %6.2f%%' % (100 * correct_head/total)
     print 'LAS: %6.2f%%' % (100 * correct_label/total)
 
-def easy_demo(conll_file, parser_model_file):
-    parser = EasyFirstParser()
-    parser.train(conll_file, parser_model_file)
+def graph_demo(argv):
+    train_file = argv[1]
+    parser_model_file = argv[2]
+    labeler_model_file = argv[3]
+    test_file = argv[4]
+    output_file = argv[5]
+ 
+    t0 = time.time()
+    parser = Parser()
+    parser.train(train_file, parser_model_file)
+    labeler.train(train_file, labeler_model_file)
+
+    test(test_file, parser, labeler, output_file)
+    evaluate(output_file)
+    print 'time used:', time.time() - t0
 
 
+def easy_demo(argv):
+    train_file = argv[1]
+    parser_model_file = argv[2]
+    labeler_model_file = argv[3]
+    test_file = argv[4]
+    output_file = argv[5]
+    max_dist = int(argv[6])
+
+    t0 = time.time()
+    parser = EasyFirstParser(max_dist = max_dist)
+    parser.train(train_file, parser_model_file, 10)
+
+    # labeler = Labeler()
+    # labeler.train(train_file, labeler_model_file)
+
+    parser = EasyFirstParser(parser_model_file, max_dist)
+    labeler = Labeler(labeler_model_file)
+    test(test_file, parser, labeler, output_file)
+    evaluate(output_file)
+    print 'time used:', time.time() - t0
 
 ####################################################
 
 if __name__ == '__main__':
-    # train_file = sys.argv[1]
-    # parser_model_file = sys.argv[2]
-    # labeler_model_file = sys.argv[3]
-    # test_file = sys.argv[4]
-    # output_file = sys.argv[5]
- 
-
-    # t0 = time.time()
-    # train(train_file, parser_model_file, labeler_model_file)
-    # test(test_file, parser_model_file, labeler_model_file, output_file)
-    # evaluate(output_file)
-    # print 'time used:', time.time() - t0
-    easy_demo(sys.argv[1], sys.argv[2])
+    easy_demo(sys.argv)

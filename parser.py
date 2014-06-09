@@ -84,7 +84,7 @@ class Parser:
     def predict(self, sent):
         score = self.__get_scores_for_MST(sent, self.model, self.model.map_feature)
         graph = MST(score)
-        sent.add_heads(graph)
+        sent.add_heads(graph.edges())
         return sent
 
 

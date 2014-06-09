@@ -170,7 +170,7 @@ def make_features_for_parser(sent, h, d, map_func):
     return filter(None, features)
 
 
-def make_features_for_easy_parser(sent, h, d, map_func):
+def make_features_for_easy_parser(sent, graph, h, d, map_func):
     features = []
 
     nodes = range(1, len(sent))
@@ -203,7 +203,7 @@ def make_features_for_easy_parser(sent, h, d, map_func):
         # features.append(map_func('d.mor~h.mor:%s~%s' % (dmor, hmor)))
         # features.append(map_func('d.mor~d.pos~h.mor~h.pos:%s~%s~%s~%s' % (dmor, dpos, hmor, hpos)))
 
-
+    features.append(map_func('dist:%d' % (graph.pending.index(h) - graph.pending.index(d))))
 
     return filter(None, features)
 

@@ -46,12 +46,12 @@ class Sentence(list):
     def add_token(self, token):
         self.append(token)
 
-    def add_heads(self, g):
-        for (h, d) in g.edges():
+    def add_heads(self, arcs):
+        for (h, d) in arcs:
             self[d].phead = h
 
     def to_str(self):
-        return '\n'.join(self[i].to_str() for i in self[1:]) + '\n'
+        return '\n'.join(t.to_str() for t in self[1:]) + '\n'
 
 
 def read_sentence(filestream, limit = 0):
