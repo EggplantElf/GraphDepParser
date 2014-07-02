@@ -1,19 +1,15 @@
-from scipy import sparse, ones, zeros
-import numpy as np
-from old_model import ParserModel
+from scipy import sparse
+from model import ParserModel
 from feature import make_features_for_parser
 from sentence import *
 from MST import *
-import time
 
 class Parser:
     def __init__(self, parser_model_file = None):
         if parser_model_file:
             self.model = ParserModel(parser_model_file)
 
-
     def __get_instances(self, model, conll_file, map_func):
-        t0 = time.time()
         instances = []
         for sent in read_sentence(open(conll_file)):
             for d in xrange(1, len(sent)):
@@ -24,8 +20,6 @@ class Parser:
                         vectors[h] = make_features_for_parser(sent, h, d, map_func)
                 instances.append((head, vectors))
         model.make_weights()
-        print 'time used: %d' % (time.time() - t0)
-        print 'num weights: %d' % len(model.weights)
         return instances
 
     def __get_scores_for_MST(self, sent, model, map_func):

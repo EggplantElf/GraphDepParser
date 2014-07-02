@@ -1,16 +1,19 @@
 import sys, time
-from model import *
+from old_model import *
 from sentence import *
 from parser import *
 from labeler import *
-from easy_first import *
+# from easy_first import *
 
+from pycallgraph import PyCallGraph
+from pycallgraph.output import GraphvizOutput
+# import cProfile
 
 def test(conll_file, parser, labeler, output_file):
     outstream = open(output_file,'w')
     for sent in read_sentence(open(conll_file)):
         parser.predict(sent)
-        labeler.predict(sent)
+        # labeler.predict(sent)
         print >> outstream, sent.to_str()
     outstream.close()
 
@@ -38,10 +41,13 @@ def graph_demo(argv):
  
     t0 = time.time()
     parser = Parser()
+    # labeler = Labeler()
     parser.train(train_file, parser_model_file)
-    labeler.train(train_file, labeler_model_file)
+    # labeler.train(train_file, labeler_model_file)
 
-    test(test_file, parser, labeler, output_file)
+    parser = Parser(parser_model_file)
+    # labeler = Labeler(labeler_model_file)
+    test(test_file, parser, None, output_file)
     evaluate(output_file)
     print 'time used:', time.time() - t0
 
@@ -70,4 +76,4 @@ def easy_demo(argv):
 ####################################################
 
 if __name__ == '__main__':
-    easy_demo(sys.argv)
+    graph_demo(sys.argv)

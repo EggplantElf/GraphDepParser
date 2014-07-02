@@ -1,23 +1,24 @@
 import sys
-from copy import deepcopy
 
-STAT = {}
+STAT = {0:0}
+NEW_STAT = {}
 
 def read_sentence(filestream, limit = 0):
     print 'reading sentences ...'
     sent = Sentence()
+    sent.pending.append(0)
     i = 1
     for line in filestream:
         line = line.rstrip()
         if line:
             items = line.split('\t')
             h, d = int(items[6]), int(items[0])
-            # if h != 0:
             sent.pending.append(d)
             sent.arcs.append((h, d))
         elif sent.pending:
             yield sent
             sent = Sentence()
+            sent.pending.append(0)
             i += 1
             if limit and i == limit:
                 break
@@ -43,9 +44,12 @@ class Sentence:
             if self.is_valid(q, p):
                 return (q, p)
 
+    def __dist(self, arc):
+        return self.pending.index(max(arc)) - self.pending.index(min(arc)) - 1
 
     def non_proj_arc(self):
         head = dict((d, h) for (h, d) in self.arcs)
+        nps = []
         for (h, d) in self.arcs:
             for i in self.pending:
                 if i > min(h, d) and i < max(h, d):
@@ -53,7 +57,10 @@ class Sentence:
                         i = head[i]
                     if i == 0: # non-proj
                         if not any(i for (i, j) in self.arcs if i == d):
-                            return (h, d)
+                            # return (h, d)
+                            nps.append((h, d))
+        if nps:
+            return min(nps, key = self.__dist)
         return None
 
 
@@ -63,18 +70,21 @@ class Sentence:
             arc = self.allowed()
             if arc:
                 self.update(arc)
+                STAT[0] += 1
             else:
                 np = self.non_proj_arc()
-                # print self.pending
-                # print self.arcs
-                # print np
-                # break
                 assert np
                 dist = len([i for i in self.pending if i > min(np) and i < max(np)])
                 if dist not in STAT:
                     STAT[dist] = 0
                 STAT[dist] += 1
                 self.update(np)
+                # break
+                # l = len(self.pending)
+                # if l not in NEW_STAT:
+                #     NEW_STAT[l] = 1
+                # else:
+                #     NEW_STAT[l] += 1
                 # break
 
 def main(conll_file):
@@ -85,3 +95,4 @@ def main(conll_file):
 if __name__ == '__main__':
     main(sys.argv[1])
     print STAT
+    print NEW_STAT

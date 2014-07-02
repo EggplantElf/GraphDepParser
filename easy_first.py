@@ -1,23 +1,25 @@
 from copy import copy
-from model import ParserModel
+from old_model import ParserModel
 from feature import make_features_for_easy_parser
 from sentence import *
 
 
 class EasyFirstGraph:
-    def __init__(self, sent = None, map_func = None, gold_arcs = [], max_dist = 0, clone = False):
+    def __init__(self, sent = None, map_func = None, gold_arcs = [], max_dist = 0, win_size = 2,clone = False):
         if not clone:
             self.max_dist = max_dist
+            self.win_size = win_size
             self.cand_arcs = {}
             self.sent = sent
             self.pending = range(1, len(sent))
             self.map_func = map_func
-
+            self.unigram_feats = {}
+            self.children = {}
             self.sorted_cands = []
             self.allowed = []
             self.gold_arcs = gold_arcs
 
-            self.refresh_cands()
+            self.init_cands()
             if gold_arcs:
                 self.refresh_allowed()
 
@@ -25,10 +27,13 @@ class EasyFirstGraph:
     def clone(self):
         g = EasyFirstGraph(clone = True)
         g.max_dist = self.max_dist
+        g.win_size = self.win_size
         g.sent = self.sent
         g.sorted_cands = []
+        g.children = {}
         g.map_func = self.map_func
 
+        g.unigram_feats = copy(self.unigram_feats)
         g.pending = copy(self.pending)
         g.cand_arcs = copy(self.cand_arcs)
         g.allowed = copy(self.allowed)
@@ -36,29 +41,91 @@ class EasyFirstGraph:
         return g
 
     # used both in predict and training
+    # def update(self, (h, d),  train = True):
+    #     # self.refresh_unigram_feats()
+    #     w = self.win_size + self.max_dist + 1
+    #     i, j = self.pending.index(min(h, d)), self.pending.index(max(h, d))
+    #     start = i - w if j - w >= 0 else 0
+    #     end = j + w if j + w < len(self.pending) else len(self.pending) - 1
+    #     end -= (self.max_dist + 1)
+
+    #     self.pending.remove(d)
+
+    #     self.refresh_cands((h, d), start, end)
+    #     self.add_child(h, d)
+    #     if train:
+    #         self.gold_arcs.remove((h,d))
+    #         self.refresh_allowed()
+
     def update(self, (h, d),  train = True):
+        # self.refresh_unigram_feats()
+        i, j = self.pending.index(min(h, d)), self.pending.index(max(h, d))
+        i = i - 2 if i - 2 >= 0 else 0
+        j = j + 2 if j + 2 < len(self.pending) else len(self.pending) - 1
+
         self.pending.remove(d)
-        self.refresh_cands()
+
+        self.refresh_cands((h, d), range(i, j))
+        self.add_child(h, d)
         if train:
             self.gold_arcs.remove((h,d))
             self.refresh_allowed()
 
+
+    def add_child(self, h, d):
+        if h not in self.children:
+            self.children[h] = [(d, self.sent[d].pos)]
+        else:
+            self.children[h].append((d, self.sent[d].pos))
+            self.children[h].sort()
+
+    def left_child(self, h):
+        if h in self.children:
+            return self.children[h][0][1]
+
+    def right_child(self, h):
+        if h in self.children:
+            return self.children[h][-1][1]
+
+
 # important, find a way to partial update features would be much more efficiant!
 # e.g. if only the words in window size of 2 of the pair are considered, can let others be the same as before!
-    def refresh_cands(self):
+    def init_cands(self):
         # for self.pending = [1, 3, 4]
         # set self.cand_arcs = {(1,3):[fv], (3,1): [fv], (3,4): [fv], (4,3): [fv]}
         assert len(self.pending) > 0
         self.cand_arcs = {}
-            # p, q = self.pending[i-1], self.pending[i]
-            # self.cand_arcs[(p, q)] = make_features_for_easy_parser(self.sent, p, q, map_func)
-            # self.cand_arcs[(q, p)] = make_features_for_easy_parser(self.sent, q, p, map_func)
         for i in xrange(self.max_dist + 1):
             for j in xrange(i + 1, len(self.pending)):
                 # i = 0 to max_dist, j = i + 1 to end
                 p, q = self.pending[j - i - 1], self.pending[j]
                 self.cand_arcs[(p, q)] = make_features_for_easy_parser(self.sent, self, p, q, self.map_func)
                 self.cand_arcs[(q, p)] = make_features_for_easy_parser(self.sent, self, q, p, self.map_func)
+
+    def refresh_cands(self, (h, d), affected):
+        # delete old arcs with the dependant from the candidates
+        to_pop = []
+        for arc in self.cand_arcs:
+            if d in arc:
+                to_pop.append(arc)
+        for arc in to_pop:
+            self.cand_arcs.pop(arc)
+
+        # add new arcs into the candidates
+
+        # update the vector of affected arcs and add new arcs
+        for i in xrange(self.max_dist + 1):
+            for j in xrange(i + 1, len(self.pending)):
+                p, q = self.pending[j - i - 1], self.pending[j]
+                if p in affected or q in affected or 
+
+
+        # for i in xrange(start, end):
+        #     for j in xrange(self.max_dist + 1):
+        #         p, q = self.pending[i], self.pending[i + j + 1]
+        #         self.cand_arcs[(p, q)] = make_features_for_easy_parser(self.sent, self, p, q, self.map_func)
+        #         self.cand_arcs[(q, p)] = make_features_for_easy_parser(self.sent, self, q, p, self.map_func)          
+
 
 
     def predict_arc(self, model):
@@ -153,7 +220,7 @@ class EasyFirstParser:
                             model.update(graph.cand_arcs[best_arc], graph.cand_arcs[pred_arc], q)
                         graph.update(best_arc)
                         # print 'update best', best_arc
-            print q, correct, total
+            # print q, correct, total
             print '\nepoch %d done, %6.2f%% correct' % (epoch,100.0*correct/total)
 
         model.average(q)

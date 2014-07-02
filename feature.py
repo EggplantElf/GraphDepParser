@@ -169,41 +169,66 @@ def make_features_for_parser(sent, h, d, map_func):
 
     return filter(None, features)
 
-
+# structure missing
 def make_features_for_easy_parser(sent, graph, h, d, map_func):
     features = []
 
     nodes = range(1, len(sent))
-    hpos, hform, hmor = sent[h].pos, sent[h].form, sent[h].mor
-    dpos, dform, dmor = sent[d].pos, sent[d].form, sent[d].mor
-    h01pos = (h != 0 and h-1 in nodes) and sent[h-1].pos or '<NA>'
-    h02pos = (h != 0 and h-2 in nodes) and sent[h-2].pos or '<NA>'
-    h11pos = (h != 0 and h+1 in nodes) and sent[h+1].pos or '<NA>'
-    h12pos = (h != 0 and h+2 in nodes) and sent[h+2].pos or '<NA>'
-
-
-    d01pos = (d != 0 and d-1 in nodes) and sent[d-1].pos or '<NA>'
-    d02pos = (d != 0 and d-2 in nodes) and sent[d-2].pos or '<NA>'
-    d11pos = (d != 0 and d+1 in nodes) and sent[d+1].pos or '<NA>'
-    d12pos = (d != 0 and d+2 in nodes) and sent[d+2].pos or '<NA>'
-
+    pending = graph.pending
     if h < d:
-        features.append(map_func('h.pos~d.pos:%s~%s' % (hpos, dpos)))
-        features.append(map_func('h.pos~d.form:%s~%s' % (hpos, dform)))
-        features.append(map_func('h.form~d.pos:%s~%s' % (hform, dpos)))
-        # features.append(map_func('h.form~d.form:%s~%s' % (hform, dform)))
-        # features.append(map_func('h.mor~d.mor:%s~%s' % (hmor, dmor)))
-        # features.append(map_func('h.mor~h.pos~d.mor~d.pos:%s~%s~%s~%s' % (hmor, hpos, dmor, dpos)))
-
+        p = pending.index(h)
+        q = pending.index(d)
+        seq = 'h<d'
     else:
-        features.append(map_func('d.pos~h.pos:%s~%s' % (dpos, hpos)))
-        features.append(map_func('d.pos~h.form:%s~%s' % (dpos, hform)))
-        features.append(map_func('d.form~h.pos:%s~%s' % (dform, hpos)))
-        # features.append(map_func('d.form~h.form:%s~%s' % (dform, hform)))
-        # features.append(map_func('d.mor~h.mor:%s~%s' % (dmor, hmor)))
-        # features.append(map_func('d.mor~d.pos~h.mor~h.pos:%s~%s~%s~%s' % (dmor, dpos, hmor, hpos)))
+        p = pending.index(d)
+        q = pending.index(h)
+        seq = 'd<h'
 
-    features.append(map_func('dist:%d' % (graph.pending.index(h) - graph.pending.index(d))))
+    t0 = pending[p-2] if p >= 1 else None
+    t1 = pending[p-1] if p >= 1 else None
+    t2 = pending[p]
+    t3 = pending[q]
+    t4 = pending[q+1] if q + 1 < len(pending) else None
+    t5 = pending[q+2] if q + 2 < len(pending) else None
+
+    token_window = [t1, t2, t3, t4]
+    pos_window = map(lambda x: sent[x].pos if x else '<NA>', token_window)
+    form_window = map(lambda x: sent[x].form if x else '<NA>', token_window)
+    lc_window = map(lambda x: graph.left_child(x) if x else '<NA>', token_window)
+    rc_window = map(lambda x: graph.right_child(x) if x else '<NA>', token_window)
+
+
+    # unigram features
+    for i in xrange(len(token_window)):
+        features.append(map_func('%s~%d~pos:%s' % (seq, i, pos_window[i])))
+        features.append(map_func('%s~%d~form:%s' % (seq, i, form_window[i])))
+        features.append(map_func('%s~%d~pos~lc:%s~%s' % (seq, i, pos_window[i], lc_window[i])))
+        features.append(map_func('%s~%d~pos~rc:%s~%s' % (seq, i, pos_window[i], rc_window[i])))
+        features.append(map_func('%s~%d~pos~lc~rc:%s~%s~%s' % (seq, i, pos_window[i], lc_window[i], rc_window[i])))
+
+
+    # # bigram features
+    # for i in xrange(len(token_window) - 1):
+    #     features.append(map_func('%s~%d~ppos~qpos:%s' % (seq, i, pos_window[i], pos_window[i+1])))
+    #     features.append(map_func('%s~%d~ppos~qform:%s' % (seq, i, pos_window[i], form_window[i+1])))
+    #     features.append(map_func('%s~%d~pform~qpos:%s' % (seq, i, form_window[i], pos_window[i+1])))
+    #     features.append(map_func('%s~%d~pform~qform:%s' % (seq, i, form_window[i], form_window[i+1])))
+    #     features.append(map_func('%s~%d~ppos~qpos~plc~qlc:%s~%s~%s~%s' 
+    #                             % (seq, i, pos_window[i], pos_window[i+1], lc_window[i], lc_window[i+1])))
+    #     features.append(map_func('%s~%d~ppos~qpos~plc~qrc:%s~%s~%s~%s' 
+    #                             % (seq, i, pos_window[i], pos_window[i+1], lc_window[i], rc_window[i+1])))
+    #     features.append(map_func('%s~%d~ppos~qpos~prc~qlc:%s~%s~%s~%s' 
+    #                             % (seq, i, pos_window[i], pos_window[i+1], rc_window[i], lc_window[i+1])))
+    #     features.append(map_func('%s~%d~ppos~qpos~prc~qrc:%s~%s~%s~%s' 
+    #                             % (seq, i, pos_window[i], pos_window[i+1], rc_window[i], rc_window[i+1])))
+
+
+    # structrue features
+
+
+
+    features.append(map_func('pending_dist:%d' % (graph.pending.index(h) - graph.pending.index(d))))
+    # features.append(map_func('surface_dist:%d' % (h - d)))
 
     return filter(None, features)
 

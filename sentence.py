@@ -54,7 +54,7 @@ class Sentence(list):
         return '\n'.join(t.to_str() for t in self[1:]) + '\n'
 
 
-def read_sentence(filestream, limit = 0):
+def read_sentence(filestream, limit = None):
     print 'reading sentences ...'
     sentence = Sentence()
     # sentence.append(Root())
@@ -69,4 +69,6 @@ def read_sentence(filestream, limit = 0):
             i += 1
             if limit and i == limit:
                 break
+            if i % 100 == 0:
+                print i
 
