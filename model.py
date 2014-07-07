@@ -99,19 +99,20 @@ class LabelerModel:
         cPickle.dump(self.label_revmap, stream, -1)
         stream.close()
 
-# need modify?
+# need modify!
     def __drop_zero_features(self):
-        new_weight = []
+        useful_feat = []
         new_featmap = {}
         q = 0
         for f in self.featmap:
             i = self.featmap[f]
-            if math.fabs(self.weights[i]) > 0.001:
-                new_weight.append(self.weights[i])
+            if any(math.fabs(self.weights[l][i]) > 0.001 for l in xrange(self.labelmap)):
+                useful_feat.append(i)
                 new_featmap[f] = q
                 q += 1
+
         self.featmap = new_featmap
-        self.weights = new_weight
+        self.weights = [map(self.weights[l].__getitem__, useful_feat) for l in xrange(self.labelmap)]
 
     def load(self, modelfile):
         stream = gzip.open(modelfile,'rb')

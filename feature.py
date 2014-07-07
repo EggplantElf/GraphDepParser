@@ -1,6 +1,6 @@
 from itertools import imap
 
-def make_features_for_labeler(sent, h, d, map_func):
+def make_features_for_labeler(sent, unigrams, h, d, map_func):
     features = []
 
     hform, hpos, hmor = unigrams[h]
@@ -36,7 +36,7 @@ def make_features_for_labeler(sent, h, d, map_func):
     return filter(None, features)
 
 
-def make_unigram_features_for_parser(sent):
+def make_unigram_features(sent):
     # features are triples like ('took', 'VB', 'past')
     return [(sent[i].form, sent[i].pos, sent[i].mor) for i in xrange(len(sent))]
 

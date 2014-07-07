@@ -42,7 +42,7 @@ class Sentence(list):
         return '\n'.join(t.to_str() for t in self[1:]) + '\n'
 
 
-def read_sentence(filestream, limit = None):
+def read_sentence(filestream, limit = 1000):
     print 'reading sentences ...'
     sentence = Sentence()
     # sentence.append(Root())

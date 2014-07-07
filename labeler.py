@@ -1,18 +1,20 @@
 from model import LabelerModel
 from sentence import *
-from feature import make_features_for_labeler
+from feature import *
 
 class Labeler:
     def __init__(self, labeler_model_file = None):
         if labeler_model_file:
             self.model = LabelerModel(labeler_model_file)
 
+
     def __get_instances(self, model, conll_file, map_func):
         instances = []
         for sent in read_sentence(open(conll_file)):
+            unigrams = make_unigram_features(sent)
             for d in xrange(1, len(sent)):
                 label = model.register_label(sent[d].label)
-                vector = make_features_for_labeler(sent, sent[d].head, d, model.register_feature)
+                vector = make_features_for_labeler(sent, unigrams,sent[d].head, d, model.register_feature)
                 instances.append((label, vector))
         model.make_weights()
         return instances
@@ -41,12 +43,14 @@ class Labeler:
         model.save(model_file)
 
     def predict(self, sent):
+        unigrams = make_unigram_features(sent)
+
         for d in xrange(1, len(sent)):
             if sent[d].phead != '_':
                 h = sent[d].phead
             else:
                 h = sent[d].head
-            vector = make_features_for_labeler(sent, h, d, self.model.map_feature)
+            vector = make_features_for_labeler(sent, unigrams, h, d, self.model.map_feature)
             pred = self.model.predict(vector)
             sent[d].plabel = self.model.mapback_label(pred)
         return sent

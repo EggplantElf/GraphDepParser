@@ -16,7 +16,7 @@ class Parser:
         t0 = time.time()
         instances = []
         for sent in read_sentence(open(conll_file)):
-            unigrams = make_unigram_features_for_parser(sent)
+            unigrams = make_unigram_features(sent)
             for d in xrange(1, len(sent)):
                 head = sent[d].head
                 vectors = {}
@@ -31,7 +31,7 @@ class Parser:
 
     def __get_scores_for_MST(self, sent, model, map_func):
         score = {}
-        unigrams = make_unigram_features_for_parser(sent)    
+        unigrams = make_unigram_features(sent)    
         for d in xrange(1, len(sent)):
             for h in xrange(len(sent)):
                 if h != d:
