@@ -3,19 +3,17 @@ from itertools import imap
 def make_features_for_labeler(sent, h, d, map_func):
     features = []
 
-    nodes = range(1, len(sent))
-    hpos, hform, hmor = sent[h].pos, sent[h].form, sent[h].mor
-    dpos, dform, dmor = sent[d].pos, sent[d].form, sent[d].mor
-    h01pos = (h != 0 and h-1 in nodes) and sent[h-1].pos or '<NA>'
-    h02pos = (h != 0 and h-2 in nodes) and sent[h-2].pos or '<NA>'
-    h11pos = (h != 0 and h+1 in nodes) and sent[h+1].pos or '<NA>'
-    h12pos = (h != 0 and h+2 in nodes) and sent[h+2].pos or '<NA>'
+    hform, hpos, hmor = unigrams[h]
+    dform, dpos, dmor = unigrams[d]  
+    h01pos = unigrams[h-1][1] if h >= 1 else '<NA>'
+    h02pos = unigrams[h-2][1] if h >= 2 else '<NA>'
+    h11pos = unigrams[h+1][1] if h + 1 < len(sent) else '<NA>'
+    h12pos = unigrams[h+1][1] if h + 2 < len(sent) else '<NA>'
 
-
-    d01pos = (d != 0 and d-1 in nodes) and sent[d-1].pos or '<NA>'
-    d02pos = (d != 0 and d-2 in nodes) and sent[d-2].pos or '<NA>'
-    d11pos = (d != 0 and d+1 in nodes) and sent[d+1].pos or '<NA>'
-    d12pos = (d != 0 and d+2 in nodes) and sent[d+2].pos or '<NA>'
+    d01pos = unigrams[d-1][1] if d >= 1 else '<NA>'
+    d02pos = unigrams[d-2][1] if d >= 2 else '<NA>'
+    d11pos = unigrams[d+1][1] if d + 1 < len(sent) else '<NA>'
+    d12pos = unigrams[d+1][1] if d + 2 < len(sent) else '<NA>'
 
     if h < d:
         features.append(map_func('h.pos~d.pos:%s~%s' % (hpos, dpos)))
