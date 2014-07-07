@@ -1,19 +1,18 @@
 import gzip, cPickle, math
-import numpy as np
 from itertools import imap
 # from sentence import *
 
 class ParserModel:
     def __init__(self, modelfile = None):
         self.featmap = {}
-        self.weights = np.array([], dtype='int16')
-        self.delta = np.array([], dtype='int32')
+        self.weights = []
+        self.delta = []
         if modelfile:
             self.load(modelfile)
 
     def make_weights(self):
-        self.weights = np.zeros(self.numfeatures(), dtype='int16')
-        self.delta = np.zeros(self.numfeatures(), dtype='int32')
+        self.weights = [0.0 for f in xrange(len(self.featmap))]
+        self.delta = [0.0 for f in xrange(len(self.featmap))]
 
     def save(self, modelfile):
         stream = gzip.open(modelfile,'wb')
@@ -22,19 +21,19 @@ class ParserModel:
         cPickle.dump(self.featmap,stream,-1)
         stream.close()
 
-    # sequence of featmap also changes, index - 1
+
     def __drop_zero_features(self):
-        new_weights = []
+        new_weight = []
         new_featmap = {}
         q = 0
         for f in self.featmap:
             i = self.featmap[f]
             if math.fabs(self.weights[i]) > 0.001:
-                new_weights.append(self.weights[i])
+                new_weight.append(self.weights[i])
                 new_featmap[f] = q
                 q += 1
         self.featmap = new_featmap
-        self.weights = np.array(new_weights, dtype='int16')
+        self.weights = new_weight
 
 
     def load(self, modelfile):
@@ -43,15 +42,10 @@ class ParserModel:
         self.featmap = cPickle.load(stream)
         stream.close()
 
-    def numfeatures(self):
-        return len(self.featmap)
-
     def register_feature(self, feature):
         if feature not in self.featmap:
             last = len(self.featmap)
-            self.featmap[feature] = last            
-            # self.weights = np.append(self.weights, 0)
-            # self.delta = np.append(self.delta, 0)
+            self.featmap[feature] = last
             return last
         else:
             return self.featmap[feature]
@@ -59,24 +53,13 @@ class ParserModel:
     def map_feature(self, feature):
         return self.featmap.get(feature,None)
 
-    def __select_weight(self, x):
-        return self.weights[x]
+    def score(self, vector):
+        return sum(imap(self.weights.__getitem__, vector))
 
-    def score(self, indices):
-        # print indices, len(self.weights)
-        # return sum(self.weights[indices])
-        return sum(imap(self.__select_weight, indices))
 
     # should be more generalized, and don't use lambda
     def predict(self, vectors):
         return max(vectors, key = lambda h: self.score(vectors[h]))
-
-    # # need change
-    # def update(self, gold_feat, pred_feat, q = 1):
-    #     self.weights[gold_feat] += 1
-    #     self.weights[pred_feat] -= 1
-    #     self.delta[gold_feat] += q
-    #     self.delta[pred_feat] -= q
 
     def update(self, gold_feat, pred_feat, q = 1):
         for i in gold_feat:
@@ -86,9 +69,9 @@ class ParserModel:
             self.weights[i] -= 1
             self.delta[i] -= q
 
-
     def average(self, q):
-        self.weights = self.weights - (self.delta * 1.0 / q)
+        for i in xrange(len(self.weights)):
+            self.weights[i] -= self.delta[i] / q
 
 
 class LabelerModel:
@@ -116,15 +99,15 @@ class LabelerModel:
         cPickle.dump(self.label_revmap, stream, -1)
         stream.close()
 
-# need modify
+# need modify?
     def __drop_zero_features(self):
         new_weight = []
         new_featmap = {}
-        q = 1
+        q = 0
         for f in self.featmap:
             i = self.featmap[f]
-            if math.fabs(self.weights[i-1]) > 0.001:
-                new_weight.append(self.weights[i-1])
+            if math.fabs(self.weights[i]) > 0.001:
+                new_weight.append(self.weights[i])
                 new_featmap[f] = q
                 q += 1
         self.featmap = new_featmap
@@ -138,16 +121,11 @@ class LabelerModel:
         self.label_revmap = cPickle.load(stream)
         stream.close()
 
-    def numfeatures(self):
-        return len(self.featmap)
-
     def register_feature(self, feature):
         if feature not in self.featmap:
-            self.featmap[feature] = self.numfeatures()+1
-            for i in xrange(len(self.weights)):
-                self.weights[i].append(0.0)
-                self.delta[i].append(0.0)
-            return self.numfeatures()
+            last = len(self.featmap)
+            self.featmap[feature] = last
+            return last
         else:
             return self.featmap[feature]
 
@@ -155,13 +133,13 @@ class LabelerModel:
         return self.featmap.get(feature,None)
 
     def register_label(self, label):
-        numfeatures = self.numfeatures()
         if label not in self.labelmap:
-            self.labelmap[label] = len(self.labelmap) + 1
-            self.label_revmap[len(self.labelmap)] = label
-            self.weights.append([ 0.0 for f in xrange(numfeatures) ])
-            self.delta.append([ 0.0 for f in xrange(numfeatures) ])
-            return len(self.labelmap)
+            last = len(self.labelmap)
+            self.labelmap[label] = last
+            self.label_revmap[last] = label
+            # self.weights.append([ 0.0 for f in xrange(numfeatures) ])
+            # self.delta.append([ 0.0 for f in xrange(numfeatures) ])
+            return last
         else:
             return self.labelmap[label]
 
@@ -172,26 +150,27 @@ class LabelerModel:
         return self.label_revmap.get(label_int, None)
 
     def score(self, vector):
-        return sum(imap(lambda x: self.weights[x - 1], vector))
+        return sum(imap(self.weights.__getitem__, vector))
 
+    # try simple sum
     def predict(self, vector):
         ans = 0
         maxsum = -9999
         for i in xrange(len(self.labelmap)):
-            s = sum(imap(lambda x: self.weights[i][x-1], vector))
+            s = sum(imap(self.weights[i].__getitem__, vector))
             if s > maxsum:
                 maxsum = s
-                ans = i + 1
+                ans = i
         return ans
 
 
     def update(self, vector, gold, pred, q = 1):
         for i in vector:
-            self.weights[gold - 1][i-1] += 1
-            self.delta[gold - 1][i-1] += q
+            self.weights[gold][i] += 1
+            self.delta[gold][i] += q
+            self.weights[pred][i] -= 1
+            self.delta[pred][i] -= q
 
-            self.weights[pred-1][i-1] -= 1
-            self.delta[pred-1][i-1] -= q
 
     def average(self, q):
         for i in xrange(len(self.weights)):

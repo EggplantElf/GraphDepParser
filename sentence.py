@@ -1,6 +1,8 @@
 
 
 class Token:
+    __slots__ = ['tid', 'form', 'lemma', 'pos', 'mor', 'head', 'label', 'phead', 'plabel']
+
     def __init__(self, line):
         entries = line.split('\t')
         self.tid = int(entries[0])
@@ -24,20 +26,6 @@ class Root(Token):
         self.lemma = 'ROOT'
         self.pos = 'ROOT'
         self.mor = 'ROOT'
-
-# class Sentence(dict):
-#     def __init__(self):
-#         self[0] = Root()
-
-#     def add_token(self, token):
-#         self[len(self)] = token
-
-#     def add_heads(self, g):
-#         for (h, d) in g.edges():
-#             self[d].phead = h
-
-#     def to_str(self):
-#         return '\n'.join([self[i].to_str() for i in range(1, len(self))]) + '\n'
 
 class Sentence(list):
     def __init__(self):

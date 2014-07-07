@@ -1,7 +1,7 @@
 from scipy import sparse, ones, zeros
 import numpy as np
-from old_model import ParserModel
-from feature import make_features_for_parser
+from model import ParserModel
+from feature import *
 from sentence import *
 from MST import *
 import time
@@ -16,12 +16,13 @@ class Parser:
         t0 = time.time()
         instances = []
         for sent in read_sentence(open(conll_file)):
+            unigrams = make_unigram_features_for_parser(sent)
             for d in xrange(1, len(sent)):
                 head = sent[d].head
                 vectors = {}
                 for h in xrange(0, len(sent)):
                     if h != d:
-                        vectors[h] = make_features_for_parser(sent, h, d, map_func)
+                        vectors[h] = make_features_for_parser(sent, unigrams, h, d, map_func)
                 instances.append((head, vectors))
         model.make_weights()
         print 'time used: %d' % (time.time() - t0)
@@ -30,10 +31,11 @@ class Parser:
 
     def __get_scores_for_MST(self, sent, model, map_func):
         score = {}
+        unigrams = make_unigram_features_for_parser(sent)    
         for d in xrange(1, len(sent)):
             for h in xrange(len(sent)):
                 if h != d:
-                    vector = make_features_for_parser(sent, h, d, map_func)
+                    vector = make_features_for_parser(sent, unigrams, h, d, map_func)
                     score[(h,d)] = (model.score(vector), [(h,d)])
         return score
 

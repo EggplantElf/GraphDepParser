@@ -11,8 +11,8 @@ class ParserModel:
             self.load(modelfile)
 
     def make_weights(self):
-        self.weights = [0.0 for f in xrange(self.numfeatures())]
-        self.delta = [0.0 for f in xrange(self.numfeatures())]
+        self.weights = [0.0 for f in xrange(len(self.featmap))]
+        self.delta = [0.0 for f in xrange(len(self.featmap))]
 
     def save(self, modelfile):
         stream = gzip.open(modelfile,'wb')
@@ -25,11 +25,11 @@ class ParserModel:
     def __drop_zero_features(self):
         new_weight = []
         new_featmap = {}
-        q = 1
+        q = 0
         for f in self.featmap:
             i = self.featmap[f]
-            if math.fabs(self.weights[i-1]) > 0.001:
-                new_weight.append(self.weights[i-1])
+            if math.fabs(self.weights[i]) > 0.001:
+                new_weight.append(self.weights[i])
                 new_featmap[f] = q
                 q += 1
         self.featmap = new_featmap
@@ -42,28 +42,20 @@ class ParserModel:
         self.featmap = cPickle.load(stream)
         stream.close()
 
-    def numfeatures(self):
-        return len(self.featmap)
-
     def register_feature(self, feature):
         if feature not in self.featmap:
-            self.featmap[feature] = self.numfeatures()+1
-            self.weights.append(0.0)
-            self.delta.append(0.0)
-
-            return self.numfeatures()
+            last = len(self.featmap)
+            self.featmap[feature] = last
+            return last
         else:
             return self.featmap[feature]
 
     def map_feature(self, feature):
         return self.featmap.get(feature,None)
 
-    def __select_weight(self, x):
-        # avoid overuse of lambda
-        return self.weights[x - 1]
-
     def score(self, vector):
-        return sum(imap(self.__select_weight, vector))
+        return sum(imap(self.weights.__getitem__, vector))
+
 
     # should be more generalized, and don't use lambda
     def predict(self, vectors):
@@ -71,11 +63,11 @@ class ParserModel:
 
     def update(self, gold_feat, pred_feat, q = 1):
         for i in gold_feat:
-            self.weights[i-1] += 1
-            self.delta[i-1] += q
+            self.weights[i] += 1
+            self.delta[i] += q
         for i in pred_feat:
-            self.weights[i-1] -= 1
-            self.delta[i-1] -= q
+            self.weights[i] -= 1
+            self.delta[i] -= q
 
     def average(self, q):
         for i in xrange(len(self.weights)):

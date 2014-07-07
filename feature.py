@@ -1,3 +1,5 @@
+from itertools import imap
+
 def make_features_for_labeler(sent, h, d, map_func):
     features = []
 
@@ -36,24 +38,25 @@ def make_features_for_labeler(sent, h, d, map_func):
     return filter(None, features)
 
 
+def make_unigram_features_for_parser(sent):
+    # features are triples like ('took', 'VB', 'past')
+    return [(sent[i].form, sent[i].pos, sent[i].mor) for i in xrange(len(sent))]
 
 
-def make_features_for_parser(sent, h, d, map_func):
+def make_features_for_parser(sent, unigrams, h, d, map_func):
     features = []
 
-    nodes = range(1, len(sent))
-    hpos, hform, hmor = sent[h].pos, sent[h].form, sent[h].mor
-    dpos, dform, dmor = sent[d].pos, sent[d].form, sent[d].mor
-    h01pos = (h != 0 and h-1 in nodes) and sent[h-1].pos or '<NA>'
-    h02pos = (h != 0 and h-2 in nodes) and sent[h-2].pos or '<NA>'
-    h11pos = (h != 0 and h+1 in nodes) and sent[h+1].pos or '<NA>'
-    h12pos = (h != 0 and h+2 in nodes) and sent[h+2].pos or '<NA>'
+    hform, hpos, hmor = unigrams[h]
+    dform, dpos, dmor = unigrams[d]  
+    h01pos = unigrams[h-1][1] if h >= 1 else '<NA>'
+    h02pos = unigrams[h-2][1] if h >= 2 else '<NA>'
+    h11pos = unigrams[h+1][1] if h + 1 < len(sent) else '<NA>'
+    h12pos = unigrams[h+1][1] if h + 2 < len(sent) else '<NA>'
 
-
-    d01pos = (d != 0 and d-1 in nodes) and sent[d-1].pos or '<NA>'
-    d02pos = (d != 0 and d-2 in nodes) and sent[d-2].pos or '<NA>'
-    d11pos = (d != 0 and d+1 in nodes) and sent[d+1].pos or '<NA>'
-    d12pos = (d != 0 and d+2 in nodes) and sent[d+2].pos or '<NA>'
+    d01pos = unigrams[d-1][1] if d >= 1 else '<NA>'
+    d02pos = unigrams[d-2][1] if d >= 2 else '<NA>'
+    d11pos = unigrams[d+1][1] if d + 1 < len(sent) else '<NA>'
+    d12pos = unigrams[d+1][1] if d + 2 < len(sent) else '<NA>'
 
 
     if h < d:
@@ -116,7 +119,7 @@ def make_features_for_parser(sent, h, d, map_func):
 
 
     offset = h -d
-    if offset < 10 and offset > -10:
+    if -10 < offset < 10:
         features.append(map_func('1step_offset:%d' % offset))
     else:
         features.append(map_func('4step_offset:%d' % (offset / 4 * 4)))
@@ -125,8 +128,8 @@ def make_features_for_parser(sent, h, d, map_func):
 
 
     # # features.append(map_func('offset:%d' % (h - d)))
-    features.append(map_func('h<d~b.pos:%s' % '~'.join(map(lambda x: sent[x].pos, range(h, d+1)))))
-    features.append(map_func('d<h~b.pos:%s' % '~'.join(map(lambda x: sent[x].pos, range(d, h+1)))))
+    features.append(map_func('h<d~b.pos:%s' % '~'.join(map(lambda x: unigrams[x][1], range(h, d+1)))))
+    features.append(map_func('d<h~b.pos:%s' % '~'.join(map(lambda x: unigrams[x][1], range(d, h+1)))))
     # # features.append(map_func('h<d~between.pos~mor:%s' % '~'.join(map(lambda x: '%s~%s' % (sent[x].pos, sent[x].mor), range(h, d+1)))))
     # # features.append(map_func('d<h~between.pos~mor:%s' % '~'.join(map(lambda x: '%s~%s' % (sent[x].pos, sent[x].mor), range(d, h+1)))))
 
@@ -136,9 +139,9 @@ def make_features_for_parser(sent, h, d, map_func):
 
 
     if h < d:
-        bpos = map(lambda x: '%s~%s' % (sent[x].pos, sent[x].mor), range(h+1, d))        
+        bpos = imap(lambda x: '%s~%s' % unigrams[x][1:], range(h+1, d))        
     else:
-        bpos = map(lambda x: '%s~%s' % (sent[x].pos, sent[x].mor), range(d+1, h))
+        bpos = imap(lambda x: '%s~%s' % unigrams[x][1:], range(d+1, h))
 
     # for pos in bpos:
     #     f = 'b.pos~mor:%s' % pos
