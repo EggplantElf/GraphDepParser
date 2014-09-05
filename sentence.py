@@ -10,7 +10,9 @@ class Token:
         self.lemma = entries[2]
         self.pos = entries[3]
         self.mor = entries[5]
-        self.head = int(entries[6])
+        self.head = entries[6]
+        if self.head != '_':
+            self.head = int(self.head)
         self.label = entries[7]
         self.phead = '_'
         self.plabel = '_'
