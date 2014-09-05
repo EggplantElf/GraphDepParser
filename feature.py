@@ -135,24 +135,24 @@ def make_features_for_parser(sent, unigrams, h, d, map_func):
 
 
 
+# del on sep. 5. (better)
+    # if h < d:
+    #     bpos = imap(lambda x: '%s~%s' % unigrams[x][1:], range(h+1, d))        
+    # else:
+    #     bpos = imap(lambda x: '%s~%s' % unigrams[x][1:], range(d+1, h))
 
-    if h < d:
-        bpos = imap(lambda x: '%s~%s' % unigrams[x][1:], range(h+1, d))        
-    else:
-        bpos = imap(lambda x: '%s~%s' % unigrams[x][1:], range(d+1, h))
-
+    # # for pos in bpos:
+    # #     f = 'b.pos~mor:%s' % pos
+    # #     if f not in features:
+    # #         features.append(map_func(f))
     # for pos in bpos:
-    #     f = 'b.pos~mor:%s' % pos
+    #     if h < d:
+    #         f = 'h.pos~b.pos~d.pos:%s~%s~%s' % (hpos, bpos, dpos)
+    #     else:
+    #         f = 'd.pos~b.pos~h.pos:%s~%s~%s' % (dpos, bpos, hpos)
+
     #     if f not in features:
     #         features.append(map_func(f))
-    for pos in bpos:
-        if h < d:
-            f = 'h.pos~b.pos~d.pos:%s~%s~%s' % (hpos, bpos, dpos)
-        else:
-            f = 'd.pos~b.pos~h.pos:%s~%s~%s' % (dpos, bpos, hpos)
-
-        if f not in features:
-            features.append(map_func(f))
 
 
     # not helping

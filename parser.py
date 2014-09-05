@@ -29,9 +29,10 @@ class Parser:
         print 'num weights: %d' % len(model.weights)
         return instances
 
+
     def __get_scores_for_MST(self, sent, model, map_func):
         score = {}
-        unigrams = make_unigram_features(sent)    
+        unigrams = make_unigram_features(sent)
         for d in xrange(1, len(sent)):
             for h in xrange(len(sent)):
                 if h != d:
