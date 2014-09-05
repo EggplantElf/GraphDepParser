@@ -38,9 +38,9 @@ def graph_demo(argv):
     output_file = argv[5]
  
     t0 = time.time()
-    parser = Parser()
+    # parser = Parser()
     labeler = Labeler()
-    parser.train(train_file, parser_model_file)
+    # parser.train(train_file, parser_model_file)
     labeler.train(train_file, labeler_model_file)
 
     parser = Parser(parser_model_file)

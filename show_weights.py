@@ -1,6 +1,6 @@
 import sys
-from parser import *
 from model import *
+
 
 def show_weights(model_file, filter_func = None):
     model = ParserModel(model_file)
