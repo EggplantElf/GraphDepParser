@@ -1,7 +1,6 @@
 from itertools import imap
 
 def make_features_for_labeler(sent, unigrams, h, d, map_func):
-    # use form of dep of dep
     features = []
 
     hform, hpos, hmor = unigrams[h]
@@ -137,7 +136,7 @@ def make_features_for_parser(sent, unigrams, h, d, map_func):
 
 
 
-# del on sep. 5. (better)
+# deleted on sep. 5. (better)
     # if h < d:
     #     bpos = imap(lambda x: '%s~%s' % unigrams[x][1:], range(h+1, d))        
     # else:

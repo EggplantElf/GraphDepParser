@@ -1,5 +1,3 @@
-from scipy import sparse, ones, zeros
-import numpy as np
 from model import ParserModel
 from feature import *
 from sentence import *
