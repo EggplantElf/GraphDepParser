@@ -18,6 +18,7 @@ def make_features_for_labeler(sent, unigrams, h, d, map_func):
         features.append(map_func('h.mor~h.pos~d.mor~d.pos:%s~%s~%s~%s' % (hmor, hpos, dmor, dpos)))
         features.append(map_func('h.pos~dd.form:%s~%s' % (hpos, ddforms))) #new
         features.append(map_func('h.pos~dd.pos:%s~%s' % (hpos, ddpos))) #new
+        features.append(map_func('h.form~dd.pos:%s~%s' % (hform, ddpos))) #new
 
 
     else:
@@ -37,14 +38,7 @@ def make_features_for_labeler(sent, unigrams, h, d, map_func):
 
 
 def deps(sent, h):
-    # train on the gold head
-    if sent[1].head == '_':
-        return [d for d in range(1, len(sent)) if sent[d].phead == h]
-    else:
-        return [d for d in range(1, len(sent)) if sent[d].head == h]
-        
-    # # train on the predicted head
-    # return [d for d in range(1, len(sent)) if sent[d].phead == h]
+    return [d for d in range(1, len(sent)) if sent[d].head == h]
 
 
 

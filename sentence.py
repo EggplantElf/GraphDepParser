@@ -1,7 +1,7 @@
 
 
 class Token:
-    __slots__ = ['tid', 'form', 'lemma', 'pos', 'mor', 'head', 'label', 'phead', 'plabel']
+    __slots__ = ['tid', 'form', 'lemma', 'pos', 'mor', 'head', 'label']
 
     def __init__(self, line):
         entries = line.split('\t')
@@ -14,17 +14,10 @@ class Token:
         if self.head != '_':
             self.head = int(self.head)
         self.label = entries[7]
-        self.phead = '_'
-        self.plabel = '_'
 
-    # def to_str(self):
-    #     return '%d\t%s\t%s\t%s\t_\t%s\t%d\t%s\t%s\t%s' %\
-    #         (self.tid, self.form, self.lemma, self.pos, self.mor, self.head, self.label, self.phead, self.plabel)
-
-    # for final test
     def to_str(self):
         return '%d\t%s\t%s\t%s\t_\t%s\t%d\t%s\t_\t_' %\
-            (self.tid, self.form, self.lemma, self.pos, self.mor, self.phead, self.plabel)
+            (self.tid, self.form, self.lemma, self.pos, self.mor, self.head, self.label)
 
 
 class Root(Token):
@@ -44,7 +37,7 @@ class Sentence(list):
 
     def add_heads(self, arcs):
         for (h, d) in arcs:
-            self[d].phead = h
+            self[d].head = h
 
     def to_str(self):
         return '\n'.join(t.to_str() for t in self[1:]) + '\n'

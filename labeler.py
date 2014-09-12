@@ -46,12 +46,9 @@ class Labeler:
         unigrams = make_unigram_features(sent)
 
         for d in xrange(1, len(sent)):
-            if sent[d].phead != '_':
-                h = sent[d].phead
-            else:
-                h = sent[d].head
+            h = sent[d].head
             vector = make_features_for_labeler(sent, unigrams, h, d, self.model.map_feature)
             pred = self.model.predict(vector)
-            sent[d].plabel = self.model.mapback_label(pred)
+            sent[d].label = self.model.mapback_label(pred)
         return sent
 
