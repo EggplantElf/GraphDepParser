@@ -46,7 +46,7 @@ def graph_demo(argv):
     parser = Parser(parser_model_file)
     labeler = Labeler(labeler_model_file)
     test(test_file, parser, labeler, output_file)
-    evaluate(output_file)
+    # evaluate(output_file)
     print 'time used:', time.time() - t0
 
 

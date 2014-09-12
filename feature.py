@@ -37,7 +37,16 @@ def make_features_for_labeler(sent, unigrams, h, d, map_func):
 
 
 def deps(sent, h):
-    return [d for d in range(1, len(sent)) if sent[d].head == h]
+    # train on the gold head
+    if sent[1].head == '_':
+        return [d for d in range(1, len(sent)) if sent[d].phead == h]
+    else:
+        return [d for d in range(1, len(sent)) if sent[d].head == h]
+        
+    # # train on the predicted head
+    # return [d for d in range(1, len(sent)) if sent[d].phead == h]
+
+
 
 def make_unigram_features(sent):
     # features are triples like ('took', 'VB', 'past')
