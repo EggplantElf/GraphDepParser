@@ -9,7 +9,7 @@ from labeler import *
 def train(train_file, chunk_parser_model, sent_parser_model): 
     chunk_parser = ChunkParser()
     sent_parser = SentParser()
-    chunk_instances, sent_instances = get_both_instances(train_file, \
+    chunk_instances, sent_instances = get_instances(train_file, \
             chunk_parser.model.register_feature, sent_parser.model.register_feature)
     chunk_parser.train(chunk_instances, chunk_parser_model)
     sent_parser.train(sent_instances, sent_parser_model)
@@ -29,7 +29,7 @@ def test(conll_file, chunk_parser_model, sent_parser_model, output_file):
 
 def sent_train_test(train_file, test_file, sent_parser_model, output_file):
     sent_parser = SentParser()
-    sent_instances = get_sent_instances(train_file, sent_parser.model.register_feature)
+    chunk_instances, sent_instances = get_instances(train_file, None, sent_parser.model.register_feature)
     sent_parser.train(sent_instances, sent_parser_model)
     outstream = open(output_file,'w')
     for sent in read_sentence(open(test_file)):
@@ -39,7 +39,7 @@ def sent_train_test(train_file, test_file, sent_parser_model, output_file):
 
 def chunk_train_test(train_file, test_file, chunk_parser_model, output_file):
     chunk_parser = ChunkParser()
-    chunk_instances = get_chunk_instances(train_file, chunk_parser.model.register_feature)
+    chunk_instances, sent_instances = get_instances(train_file, chunk_parser.model.register_feature, None)
     chunk_parser.train(chunk_instances, chunk_parser_model)
     outstream = open(output_file,'w')
     for sent in read_sentence(open(test_file)):

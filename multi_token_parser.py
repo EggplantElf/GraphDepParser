@@ -57,86 +57,55 @@ def out_mates(sent, chunks, tid):
     return [t for t in range(len(sent)) if t not in current_chunk]
 
 
-def devide(sent, chunks):
-    chunk_tokens = []
-    for chunk in chunks:
-        if len(chunk) > 1:
-            chunk_tokens += chunk
-    chunk_tokens = sum([c for c in chunks if len(c) > 1], [])
-    # non_head_chunk_tokens = []
+def get_chunk_tokens(sent, chunks):
+    # chunk_tokens = []
     # for chunk in chunks:
-    #     non_head_chunk_tokens += [d for d in chunk if sent[d].head in chunk]
-    # out_tokens = [t for t in range(1, len(sent)) if t not in non_head_chunk_tokens]
-    return chunk_tokens
+    #     if len(chunk) > 1:
+    #         chunk_tokens += chunk
+    # chunk_tokens = sum([c for c in chunks if len(c) > 1], [])
+    # return chunk_tokens
+    return sum([c for c in chunks if len(c) > 1], [])
 
 
-def get_both_instances(conll_file, chunk_map_func, out_map_func):
+def get_chunk_instances(sent, unigrams, chunk_map_func):
+    chunk_instances = []
+    chunks = get_chunks(sent, True)
+    chunk_tokens = get_chunk_tokens(sent, chunks)
+    for d in chunk_tokens:
+        mates = chunk_mates(chunks, d)
+        head = sent[d].head
+        if head not in mates:
+            head = 0
+        vectors = {}
+        for h in mates:
+            vectors[h] = make_features_for_parser(sent, unigrams, h, d, chunk_map_func)
+        chunk_instances.append((head, vectors))
+    return chunk_instances
+
+def get_sent_instances(sent, unigrams, sent_map_func):
+    sent_instances = []
+    for d in xrange(1, len(sent)):
+        head = sent[d].head
+        vectors = {}
+        for h in xrange(0, len(sent)):
+            if h != d:
+                vectors[h] = make_features_for_parser(sent, unigrams, h, d, sent_map_func)
+        sent_instances.append((head, vectors))
+    return sent_instances
+
+def get_instances(conll_file, chunk_map_func, sent_map_func):
     chunk_instances, sent_instances = [], []
     for sent in read_sentence(open(conll_file), True):
         unigrams = make_unigram_features(sent)
-        chunks = get_chunks(sent, True)
-        # should look like [([1,2,3], 1), ...] for 1 as the head of the chunk
-        # sanity check for gold tree, also can contain statistics for further analysis
-
-        chunk_tokens = devide(sent, chunks)
-
-        # a sentence is chunked as [[1, 2], [3], [4, 5], [6]]
-        # [1, 2, 4, 5]
-        for d in chunk_tokens:
-            mates = chunk_mates(chunks, d)
-            head = sent[d].head
-            # should be 0 or actual head? 0!
-            if head not in mates:
-                head = 0
-            vectors = {}
-            for h in mates:
-                vectors[h] = make_features_for_parser(sent, unigrams, h, d, chunk_map_func)
-            chunk_instances.append((head, vectors))
-
-        ## [2, 3, 5, 6]
-        ## for d in out_tokens:
-        # all tokens for sent training
-        for d in xrange(1, len(sent)):
-            # mates = out_mates(sent, chunks, d)
-            head = sent[d].head
-            vectors = {}
-            for h in xrange(0, len(sent)):
-                if h != d:
-                    vectors[h] = make_features_for_parser(sent, unigrams, h, d, out_map_func)
-            sent_instances.append((head, vectors))
-
-    print BAD
+        if chunk_map_func:
+            chunk_instances.extend(get_chunk_instances(sent, unigrams, chunk_map_func))
+        # sent features should use chunk information
+        if sent_map_func:
+            sent_instances.extend(get_sent_instances(sent, unigrams, sent_map_func))
     return chunk_instances, sent_instances
 
-def get_sent_instances(conll_file, out_map_func):
-    sent_instances = []
-    for sent in read_sentence(open(conll_file), True):
-        unigrams = make_unigram_features(sent)
-        for d in xrange(1, len(sent)):
-            head = sent[d].head
-            vectors = {}
-            for h in xrange(0, len(sent)):
-                if h != d:
-                    vectors[h] = make_features_for_parser(sent, unigrams, h, d, out_map_func)
-            sent_instances.append((head, vectors))
-    return sent_instances
 
-def get_chunk_instances(conll_file, chunk_map_func):
-    chunk_instances = []
-    for sent in read_sentence(open(conll_file), True):
-        unigrams = make_unigram_features(sent)
-        chunks = get_chunks(sent, True)
-        chunk_tokens = devide(sent, chunks)
-        for d in chunk_tokens:
-            mates = chunk_mates(chunks, d)
-            head = sent[d].head
-            if head not in mates:
-                head = 0
-            vectors = {}
-            for h in mates:
-                vectors[h] = make_features_for_parser(sent, unigrams, h, d, chunk_map_func)
-            chunk_instances.append((head, vectors))
-    return chunk_instances
+
 
 
 class SentParser:
@@ -146,7 +115,7 @@ class SentParser:
         else:
             self.model = ParserModel()
 
-    def __get_scores_for_MST(self, sent, model, map_func, factor = 1.2):
+    def __get_scores_for_MST(self, sent, model, map_func, factor = 1.5):
         scores = {}
         unigrams = make_unigram_features(sent)    
         for d in xrange(1, len(sent)):
