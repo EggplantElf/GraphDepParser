@@ -115,7 +115,7 @@ class SentParser:
         else:
             self.model = ParserModel()
 
-    def __get_scores_for_MST(self, sent, model, map_func, factor = 1.5):
+    def __get_scores_for_MST(self, sent, model, map_func, factor):
         scores = {}
         unigrams = make_unigram_features(sent)    
         for d in xrange(1, len(sent)):
@@ -150,8 +150,8 @@ class SentParser:
         self.model.save(model_file)
 
 
-    def predict(self, sent):
-        score = self.__get_scores_for_MST(sent, self.model, self.model.map_feature)
+    def predict(self, sent, factor):
+        score = self.__get_scores_for_MST(sent, self.model, self.model.map_feature, factor)
         graph = MST(score)
         sent.add_heads(graph.edges())
         return sent
