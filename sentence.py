@@ -1,19 +1,29 @@
 
 
 class Token:
-    __slots__ = ['tid', 'form', 'lemma', 'pos', 'mor', 'head', 'label']
+    __slots__ = ['tid', 'form', 'lemma', 'pos', 'mor', 'head', 'label', 'ctag']
 
-    def __init__(self, line):
+    def __init__(self, line, train = False):
         entries = line.split('\t')
         self.tid = int(entries[0])
         self.form = entries[1]
         self.lemma = entries[2]
         self.pos = entries[3]
         self.mor = entries[5]
-        self.head = entries[6]
-        if self.head != '_':
-            self.head = int(self.head)
-        self.label = entries[7]
+        if train:
+            self.head = int(entries[6])
+            self.label = entries[7]
+        else:
+            self.head = 0
+            self.label = ''
+        
+        # self.ctag = entries[10].split('-')[0]
+        # only NP
+        chunk = entries[10].split('-')
+        if chunk != ['O'] and chunk[1] == 'NP':
+            self.ctag = chunk[0]
+        else:
+            self.ctag = 'O'
 
     def to_str(self):
         return '%d\t%s\t%s\t%s\t_\t%s\t%d\t%s\t_\t_' %\
@@ -43,7 +53,7 @@ class Sentence(list):
         return '\n'.join(t.to_str() for t in self[1:]) + '\n'
 
 
-def read_sentence(filestream, limit = None):
+def read_sentence(filestream, train = False):
     print 'reading sentences ...'
     sentence = Sentence()
     # sentence.append(Root())
@@ -51,13 +61,11 @@ def read_sentence(filestream, limit = None):
     for line in filestream:
         line = line.rstrip()
         if line:
-            sentence.add_token(Token(line))
+            sentence.add_token(Token(line, train))
         elif len(sentence) != 1:
             yield sentence
             sentence = Sentence()
             i += 1
-            if limit and i == limit:
-                break
             if i % 100 == 0:
                 print i
 

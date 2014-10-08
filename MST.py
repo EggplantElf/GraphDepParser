@@ -31,7 +31,8 @@ def contract(g, c, s, tc):
     if 0 in vo:
        vo.remove(0)
     tc -= 1
-    sc = sum([s[e][0] for e in c.edges()])
+    # sc = sum([s[e][0] for e in c.edges()])
+    sc = sum(s[e][0] for e in c.edges())
     g.add_node(tc)
     for td in vo:
         th = max(c, key = lambda x: s[(x, td)][0])

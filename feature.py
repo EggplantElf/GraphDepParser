@@ -42,9 +42,13 @@ def deps(sent, h):
 
 
 
-def make_unigram_features(sent):
+def make_unigram_features(sent, chunk = []):
     # features are triples like ('took', 'VB', 'past')
-    return [(sent[i].form, sent[i].pos, sent[i].mor) for i in xrange(len(sent))]
+    if chunk:
+        return [(sent[i].form, sent[i].pos, sent[i].mor) for i in chunk + [0]]
+    else:
+        return [(sent[i].form, sent[i].pos, sent[i].mor) for i in xrange(len(sent))]
+
 
 
 def make_features_for_parser(sent, unigrams, h, d, map_func):

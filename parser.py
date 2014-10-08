@@ -9,7 +9,7 @@ class Parser:
         if parser_model_file:
             self.model = ParserModel(parser_model_file)
 
-
+    # for training
     def __get_instances(self, model, conll_file, map_func):
         t0 = time.time()
         instances = []
@@ -27,7 +27,7 @@ class Parser:
         print 'num weights: %d' % len(model.weights)
         return instances
 
-
+    # for prediction
     def __get_scores_for_MST(self, sent, model, map_func):
         score = {}
         unigrams = make_unigram_features(sent)
