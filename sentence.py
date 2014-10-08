@@ -17,13 +17,13 @@ class Token:
             self.head = 0
             self.label = ''
         
-        # self.ctag = entries[10].split('-')[0]
-        # only NP
-        chunk = entries[10].split('-')
-        if chunk != ['O'] and chunk[1] == 'NP':
-            self.ctag = chunk[0]
-        else:
-            self.ctag = 'O'
+        self.ctag = entries[10].split('-')[0]
+        # # only NP
+        # chunk = entries[10].split('-')
+        # if chunk != ['O'] and chunk[1] == 'NP':
+        #     self.ctag = chunk[0]
+        # else:
+        #     self.ctag = 'O'
 
     def to_str(self):
         return '%d\t%s\t%s\t%s\t_\t%s\t%d\t%s\t_\t_' %\

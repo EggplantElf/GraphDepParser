@@ -69,8 +69,8 @@ def devide(sent, chunks):
     # out_tokens = [t for t in range(1, len(sent)) if t not in non_head_chunk_tokens]
     return chunk_tokens
 
-# should integrate the chunker with the input format conll
-def get_instances(conll_file, chunk_map_func, out_map_func):
+
+def get_both_instances(conll_file, chunk_map_func, out_map_func):
     chunk_instances, sent_instances = [], []
     for sent in read_sentence(open(conll_file), True):
         unigrams = make_unigram_features(sent)
@@ -108,7 +108,7 @@ def get_instances(conll_file, chunk_map_func, out_map_func):
     print BAD
     return chunk_instances, sent_instances
 
-def get_instances(conll_file, out_map_func):
+def get_sent_instances(conll_file, out_map_func):
     sent_instances = []
     for sent in read_sentence(open(conll_file), True):
         unigrams = make_unigram_features(sent)
@@ -121,7 +121,22 @@ def get_instances(conll_file, out_map_func):
             sent_instances.append((head, vectors))
     return sent_instances
 
-
+def get_chunk_instances(conll_file, chunk_map_func):
+    chunk_instances = []
+    for sent in read_sentence(open(conll_file), True):
+        unigrams = make_unigram_features(sent)
+        chunks = get_chunks(sent, True)
+        chunk_tokens = devide(sent, chunks)
+        for d in chunk_tokens:
+            mates = chunk_mates(chunks, d)
+            head = sent[d].head
+            if head not in mates:
+                head = 0
+            vectors = {}
+            for h in mates:
+                vectors[h] = make_features_for_parser(sent, unigrams, h, d, chunk_map_func)
+            chunk_instances.append((head, vectors))
+    return chunk_instances
 
 
 class SentParser:
@@ -131,7 +146,7 @@ class SentParser:
         else:
             self.model = ParserModel()
 
-    def __get_scores_for_MST(self, sent, model, map_func, factor = 1.5):
+    def __get_scores_for_MST(self, sent, model, map_func, factor = 1.2):
         scores = {}
         unigrams = make_unigram_features(sent)    
         for d in xrange(1, len(sent)):

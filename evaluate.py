@@ -1,6 +1,6 @@
 import sys
 
-def evaluate(conll_file):
+def evaluate(conll_file, gold_file):
     total = 0.0
     correct = 0.0
     for line in open(conll_file):
