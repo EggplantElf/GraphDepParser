@@ -14,7 +14,7 @@ def train(train_file, chunk_parser_model, sent_parser_model):
     chunk_parser.train(chunk_instances, chunk_parser_model)
     sent_parser.train(sent_instances, sent_parser_model)
 
-def test(conll_file, chunk_parser_model, sent_parser_model, output_file, factor = 2):
+def test(conll_file, chunk_parser_model, sent_parser_model, output_file):
     chunk_parser = ChunkParser(chunk_parser_model)
     sent_parser = SentParser(sent_parser_model)
     outstream = open(output_file,'w')
@@ -23,7 +23,7 @@ def test(conll_file, chunk_parser_model, sent_parser_model, output_file, factor 
             if len(chunk) > 1:
                 chunk_parser.predict(sent, chunk)
 
-        sent_parser.predict(sent, factor)
+        sent_parser.predict(sent)
         print >> outstream, sent.to_str()
     outstream.close()
 
@@ -63,9 +63,9 @@ def train_and_test_factor(train_file, test_file, chunk_parser_model, sent_parser
 
 
 if __name__ == '__main__':
-    train_and_test_factor('../tmp/wsj_train.cx', '../tmp/wsj_dev.cx', '../tmp/chunk.parser', '../tmp/sent.parser', [1, 1.2, 1.5, 2, 3, 5])
-    # train('../tmp/wsj_train.cx', '../tmp/chunk.parser', '../tmp/sent.parser')
-    # test('../tmp/wsj_dev.cx', '../tmp/chunk.parser', '../tmp/sent.parser', '../tmp/wsj_dev.pred.conll06')
+    # train_and_test_factor('../tmp/wsj_train.cx', '../tmp/wsj_dev.cx', '../tmp/chunk.parser', '../tmp/sent.parser', [1, 1.2, 1.5, 2, 3, 5])
+    train('../tmp/wsj_train.cx', '../tmp/chunk.parser', '../tmp/sent.parser')
+    test('../tmp/wsj_dev.cx', '../tmp/chunk.parser', '../tmp/sent.parser', '../tmp/wsj_dev.pred.conll06')
     # sent_train_test('../tmp/wsj_train.cx', '../tmp/wsj_dev.cx', '../tmp/solo.parser', '../tmp/wsj_dev.solo.pred.conll06')
     # chunk_train_test('../tmp/wsj_full_train.cx', '../tmp/wsj_dev.cx', '../tmp/chunk.parser', '../tmp/wsj_dev.chunk.conll06')
 

@@ -58,18 +58,11 @@ def out_mates(sent, chunks, tid):
 
 
 def get_chunk_tokens(sent, chunks):
-    # chunk_tokens = []
-    # for chunk in chunks:
-    #     if len(chunk) > 1:
-    #         chunk_tokens += chunk
-    # chunk_tokens = sum([c for c in chunks if len(c) > 1], [])
-    # return chunk_tokens
     return sum([c for c in chunks if len(c) > 1], [])
 
 
-def get_chunk_instances(sent, unigrams, chunk_map_func):
+def get_chunk_instances(sent, chunks, unigrams, chunk_map_func):
     chunk_instances = []
-    chunks = get_chunks(sent, True)
     chunk_tokens = get_chunk_tokens(sent, chunks)
     for d in chunk_tokens:
         mates = chunk_mates(chunks, d)
@@ -82,14 +75,17 @@ def get_chunk_instances(sent, unigrams, chunk_map_func):
         chunk_instances.append((head, vectors))
     return chunk_instances
 
-def get_sent_instances(sent, unigrams, sent_map_func):
+def get_sent_instances(sent, chunks, unigrams, sent_map_func):
     sent_instances = []
     for d in xrange(1, len(sent)):
         head = sent[d].head
+        # d in a chunk, need test
+        if any(c for c in chunks if len(c) > 1 and d in c and sent[d].head in c):
+            sent[d].chunkhead = sent[d].head
         vectors = {}
         for h in xrange(0, len(sent)):
             if h != d:
-                vectors[h] = make_features_for_parser(sent, unigrams, h, d, sent_map_func)
+                vectors[h] = make_features_for_parser(sent, unigrams, h, d, sent_map_func, chunk_info = True)
         sent_instances.append((head, vectors))
     return sent_instances
 
@@ -97,14 +93,14 @@ def get_instances(conll_file, chunk_map_func, sent_map_func):
     chunk_instances, sent_instances = [], []
     for sent in read_sentence(open(conll_file), True):
         unigrams = make_unigram_features(sent)
+        chunks = get_chunks(sent, True)
+
         if chunk_map_func:
-            chunk_instances.extend(get_chunk_instances(sent, unigrams, chunk_map_func))
-        # sent features should use chunk information
+            chunk_instances.extend(get_chunk_instances(sent, chunks, unigrams, chunk_map_func))
         if sent_map_func:
-            sent_instances.extend(get_sent_instances(sent, unigrams, sent_map_func))
+            sent_instances.extend(get_sent_instances(sent, chunks, unigrams, sent_map_func))
+
     return chunk_instances, sent_instances
-
-
 
 
 
@@ -115,17 +111,17 @@ class SentParser:
         else:
             self.model = ParserModel()
 
-    def __get_scores_for_MST(self, sent, model, map_func, factor):
+    def __get_scores_for_MST(self, sent, model, map_func, factor = 1):
         scores = {}
         unigrams = make_unigram_features(sent)    
         for d in xrange(1, len(sent)):
             # if sent[d].head in ['_', 0]:
             for h in xrange(len(sent)):
                 if h != d:
-                    vector = make_features_for_parser(sent, unigrams, h, d, map_func)
+                    vector = make_features_for_parser(sent, unigrams, h, d, map_func, chunk_info = True)
                     s = model.score(vector)
-                    if h != 0 and h == sent[d].head and s > 0:
-                        s *= factor
+                    # if h != 0 and h == sent[d].head and s > 0:
+                        # s *= factor
                     scores[(h,d)] = (s, [(h,d)])
         return scores
 
@@ -150,8 +146,14 @@ class SentParser:
         self.model.save(model_file)
 
 
-    def predict(self, sent, factor):
-        score = self.__get_scores_for_MST(sent, self.model, self.model.map_feature, factor)
+    # def predict_with_factor(self, sent, factor):
+    #     score = self.__get_scores_for_MST(sent, self.model, self.model.map_feature, factor)
+    #     graph = MST(score)
+    #     sent.add_heads(graph.edges())
+    #     return sent
+
+    def predict(self, sent):
+        score = self.__get_scores_for_MST(sent, self.model, self.model.map_feature)
         graph = MST(score)
         sent.add_heads(graph.edges())
         return sent
@@ -198,7 +200,7 @@ class ChunkParser:
     def predict(self, sent, chunk):
         score = self.__get_scores_for_MST(sent, chunk, self.model, self.model.map_feature)
         graph = MST(score)
-        sent.add_heads(graph.edges())
+        sent.add_chunkheads(graph.edges())
         return chunk
 
 
