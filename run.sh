@@ -1,12 +1,12 @@
 
-set evalscript = '../data/english/dev/wsj_dev.conll06'
-set train_file = '../tmp/wsj_train.cx'
-set test_file = '../tmp/wsj_dev.cx'
-set baseline_output = '../tmp/wsj_dev.pred.baseline.conll06'
-set IOB_output = '../tmp/wsj_dev.pred.IOB.conll06'
-set chunk_parser = '../tmp/chunk.parser'
-set clause_parser = '../tmp/clause.parser'
-set sent_parser = '../tmp/sent.parser'
+evalscript='../data/english/dev/wsj_dev.conll06'
+train_file='../tmp/wsj_train.cx'
+test_file='../tmp/wsj_dev.cx'
+baseline_output='../tmp/wsj_dev.pred.baseline.conll06'
+IOB_output='../tmp/wsj_dev.pred.IOB.conll06'
+chunk_parser='../tmp/chunk.parser'
+clause_parser='../tmp/clause.parser'
+sent_parser='../tmp/sent.parser'
 
 
 
