@@ -13,15 +13,15 @@ class SentParser:
         else:
             self.model = ParserModel()
 
-    def __get_scores_for_MST(self, sent, model, map_func, factor = 1):
+    def __get_scores_for_MST(self, sent, model, map_func, feats, factor):
         scores = {}
         unigrams = make_unigram_features(sent)    
         for d in xrange(1, len(sent)):
             for h in xrange(len(sent)):
                 if h != d:
-                    vector = make_features_for_parser(sent, unigrams, h, d, map_func, chunk_info = False)
+                    vector = make_features_for_parser(sent, unigrams, h, d, map_func, feats)
                     s = model.score(vector)
-                    if h != 0 and h == sent[d].chunkhead and s > 0:
+                    if h != 0 and h == sent[d].unithead and s > 0:
                         s *= factor
                     scores[(h,d)] = (s, [(h,d)])
         return scores
@@ -47,17 +47,12 @@ class SentParser:
         self.model.average(q)
         self.model.save(model_file)
 
-    def predict(self, sent):
-        score = self.__get_scores_for_MST(sent, self.model, self.model.map_feature)
+    def predict(self, sent, feats, factor = 1.0):
+        score = self.__get_scores_for_MST(sent, self.model, self.model.map_feature, feats, factor)
         graph = MST(score)
         sent.add_heads(graph.edges())
         return sent
 
-    def predict_with_factor(self, sent, factor):
-        score = self.__get_scores_for_MST(sent, self.model, self.model.map_feature, factor)
-        graph = MST(score)
-        sent.add_heads(graph.edges())
-        return sent
 
     def train_CLE(self, instances, model_file, epochs = 10):
         print 'start training ...'
@@ -90,20 +85,20 @@ class SentParser:
 
 
 
-class ChunkParser:
+class UnitParser:
     def __init__(self, parser_model_file = None):
         if parser_model_file:
             self.model = ParserModel(parser_model_file)
         else:
             self.model = ParserModel()
 
-    def __get_scores_for_MST(self, sent, chunk, model, map_func):
+    def __get_scores_for_MST(self, sent, unit, model, map_func, feats):
         scores = {}
         unigrams = make_unigram_features(sent)    
-        for d in chunk:
-            for h in chunk + [0]:
+        for d in unit:
+            for h in unit + [0]:
                 if h != d:
-                    vector = make_features_for_parser(sent, unigrams, h, d, map_func)
+                    vector = make_features_for_parser(sent, unigrams, h, d, map_func, feats)
                     scores[(h,d)] = (model.score(vector), [(h,d)])
         return scores
 
@@ -161,11 +156,11 @@ class ChunkParser:
         self.model.save(model_file)
 
 
-    def predict(self, sent, chunk):
-        score = self.__get_scores_for_MST(sent, chunk, self.model, self.model.map_feature)
+    def predict(self, sent, unit, feats):
+        score = self.__get_scores_for_MST(sent, unit, self.model, self.model.map_feature, feats)
         graph = MST(score)
-        sent.add_chunkheads(graph.edges())
-        # use to check chunk accuracy
+        sent.add_unitheads(graph.edges())
+        # use to check unit accuracy
         # sent.add_heads(graph.edges())
         return sent
 

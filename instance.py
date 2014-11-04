@@ -46,110 +46,108 @@ def get_clauses(sent, train = False):
     return filter(lambda x: len(x) > 1, clauses)
 
 
-def check(sent, chunk):
-    return len([d for d in chunk if sent[d].head not in chunk]) == 1
+def check(sent, unit):
+    return len([d for d in unit if sent[d].head not in unit]) == 1
 
 
-def chunk_mates(chunks, token):
+def unit_mates(units, token):
     mates = []
-    for chunk in chunks:
-        if token in chunk:
-            mates = [0] + chunk[:]
+    for unit in units:
+        if token in unit:
+            mates = [0] + unit[:]
             mates.remove(token)
             break
     return mates
 
-def out_mates(sent, chunks, tid):
-    for chunk in chunks:
-        if tid in chunk:
-            current_chunk = chunk
+def out_mates(sent, units, tid):
+    for unit in units:
+        if tid in unit:
+            current_unit = unit
             break
-    return [t for t in range(len(sent)) if t not in current_chunk]
+    return [t for t in range(len(sent)) if t not in current_unit]
 
 
-def get_chunk_tokens(sent, chunks):
-    return sum([c for c in chunks if len(c) > 1], [])
+def get_unit_tokens(sent, units):
+    return sum([c for c in units if len(c) > 1], [])
 
-def get_chunk_instances(sent, chunks, unigrams, chunk_map_func):
-    chunk_instances = []
-    chunk_tokens = get_chunk_tokens(sent, chunks)
-    for d in chunk_tokens:
-        mates = chunk_mates(chunks, d)
+def get_unit_instances(sent, units, unigrams, unit_map_func, feats):
+    unit_instances = []
+    unit_tokens = get_unit_tokens(sent, units)
+    for d in unit_tokens:
+        mates = unit_mates(units, d)
         head = sent[d].head
         if head not in mates:
             head = 0
         vectors = {}
         for h in mates:
-            vectors[h] = make_features_for_parser(sent, unigrams, h, d, chunk_map_func)
-        chunk_instances.append((head, vectors))
-    return chunk_instances
+            vectors[h] = make_features_for_parser(sent, unigrams, h, d, unit_map_func, feats)
+        unit_instances.append((head, vectors))
+    return unit_instances
 
-def get_sent_instances(sent, chunks, unigrams, sent_map_func):
+def get_sent_instances(sent, units, unigrams, sent_map_func, feats):
     sent_instances = []
     for d in xrange(1, len(sent)):
         head = sent[d].head
-        # d in a chunk, need test
-        if any(c for c in chunks if d in c and sent[d].head in c):
-            sent[d].chunkhead = sent[d].head
+        # d in a unit, need test
+        if any(c for c in units if d in c and sent[d].head in c):
+            sent[d].unithead = sent[d].head
         vectors = {}
         for h in xrange(0, len(sent)):
             if h != d:
-                vectors[h] = make_features_for_parser(sent, unigrams, h, d, sent_map_func, chunk_info = False)
+                vectors[h] = make_features_for_parser(sent, unigrams, h, d, sent_map_func, feats)
         sent_instances.append((head, vectors))
     return sent_instances
 
-def get_instances(conll_file, chunk_map_func, sent_map_func):
-    chunk_instances, sent_instances = [], []
+def get_instances(conll_file, unit_parser, sent_parser, unit_feats, sent_feats):
+    unit_instances, sent_instances = [], []
     for sent in read_sentence(open(conll_file), True):
         unigrams = make_unigram_features(sent)
-        good_chunks = get_chunks(sent, True)
-        chunks = get_chunks(sent, False)        
-        # good_chunks = get_clauses(sent, True)
-        # chunks = get_clauses(sent, False)
-        if chunk_map_func:
-            chunk_instances.extend(get_chunk_instances(sent, good_chunks, unigrams, chunk_map_func))
-        if sent_map_func:
-            sent_instances.extend(get_sent_instances(sent, chunks, unigrams, sent_map_func))
+        good_units = get_chunks(sent, True)
+        units = get_chunks(sent, False)
+        if unit_parser:
+            unit_instances.extend(get_unit_instances(sent, good_units, unigrams, unit_parser.model.register_feature, unit_feats))
+        if sent_parser:
+            sent_instances.extend(get_sent_instances(sent, units, unigrams, sent_parser.model.register_feature, sent_feats))
 
-    return chunk_instances, sent_instances
+    return unit_instances, sent_instances
 
 
 
-def get_CLE_chunk_instance(sent, chunk, unigrams, sent_map_func):
-    arcs = []
-    vectors = {}
-    for d in chunk:
-        arcs.append((sent[d].head if sent[d].head in chunk else 0, d))
-        for h in [0] + chunk:
-            if h != d:
-                vectors[(h, d)] = make_features_for_parser(sent, unigrams, h, d, sent_map_func)
-    return arcs, vectors
+# def get_CLE_chunk_instance(sent, chunk, unigrams, sent_map_func):
+#     arcs = []
+#     vectors = {}
+#     for d in chunk:
+#         arcs.append((sent[d].head if sent[d].head in chunk else 0, d))
+#         for h in [0] + chunk:
+#             if h != d:
+#                 vectors[(h, d)] = make_features_for_parser(sent, unigrams, h, d, sent_map_func)
+#     return arcs, vectors
 
 
-def get_CLE_sent_instance(sent, chunks, unigrams, sent_map_func):
-    # chunks are used as feature
-    arcs = []
-    vectors = {}
-    for d in xrange(1, len(sent)):
-        arcs.append((sent[d].head, d))
-        # if any(c for c in chunks if d in c and sent[d].head in c):
-            # sent[d].chunkhead = sent[d].head
-        for h in xrange(0, len(sent)):
-            if h != d:
-                vectors[(h, d)] = make_features_for_parser(sent, unigrams, h, d, sent_map_func)
-    return arcs, vectors
+# def get_CLE_sent_instance(sent, chunks, unigrams, sent_map_func):
+#     # chunks are used as feature
+#     arcs = []
+#     vectors = {}
+#     for d in xrange(1, len(sent)):
+#         arcs.append((sent[d].head, d))
+#         # if any(c for c in chunks if d in c and sent[d].head in c):
+#             # sent[d].chunkhead = sent[d].head
+#         for h in xrange(0, len(sent)):
+#             if h != d:
+#                 vectors[(h, d)] = make_features_for_parser(sent, unigrams, h, d, sent_map_func)
+#     return arcs, vectors
 
 
-def get_CLE_instances(conll_file, chunk_map_func, sent_map_func):
-    chunk_instances, sent_instances = [], []
-    for sent in read_sentence(open(conll_file), True):
-        unigrams = make_unigram_features(sent)
-        # only good chunks for training
-        chunks = get_chunks(sent, True)
-        for chunk in chunks:
-            chunk_instances.append(get_CLE_chunk_instance(sent, chunk, unigrams, chunk_map_func))
-        sent_instances.append(get_CLE_sent_instance(sent, chunks, unigrams, sent_map_func))
-    return chunk_instances, sent_instances
+# def get_CLE_instances(conll_file, chunk_map_func, sent_map_func):
+#     chunk_instances, sent_instances = [], []
+#     for sent in read_sentence(open(conll_file), True):
+#         unigrams = make_unigram_features(sent)
+#         # only good chunks for training
+#         chunks = get_chunks(sent, True)
+#         for chunk in chunks:
+#             chunk_instances.append(get_CLE_chunk_instance(sent, chunk, unigrams, chunk_map_func))
+#         sent_instances.append(get_CLE_sent_instance(sent, chunks, unigrams, sent_map_func))
+#     return chunk_instances, sent_instances
 
 
 

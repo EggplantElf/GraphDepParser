@@ -1,7 +1,7 @@
 
 
 class Token:
-    __slots__ = ['tid', 'form', 'lemma', 'pos', 'mor', 'head', 'label', 'ctag', 'chunkhead']
+    __slots__ = ['tid', 'form', 'lemma', 'pos', 'mor', 'head', 'label', 'ctag', 'unithead']
 
     def __init__(self, line, train = False):
         entries = line.split('\t')
@@ -10,7 +10,7 @@ class Token:
         self.lemma = entries[2]
         self.pos = entries[3]
         self.mor = entries[5]
-        self.chunkhead = 0
+        self.unithead = 0
         if train:
             self.head = int(entries[6])
             self.label = entries[7]
@@ -22,9 +22,9 @@ class Token:
         if len(entries) > 10:
             self.ctag = entries[10].split('-')[0]
 
-            # chunk = entries[10].split('-')
-            # if chunk != ['O'] and chunk[1] == 'NP':
-            #     self.ctag = chunk[0]
+            # unit = entries[10].split('-')
+            # if unit != ['O'] and unit[1] == 'NP':
+            #     self.ctag = unit[0]
             # else:
             #     self.ctag = 'O'
 
@@ -43,7 +43,7 @@ class Root(Token):
         self.lemma = 'ROOT'
         self.pos = 'ROOT'
         self.mor = 'ROOT'
-        self.chunkhead = 0
+        self.unithead = 0
         self.ctag = 'ROOT'
 
 class Sentence(list):
@@ -57,9 +57,9 @@ class Sentence(list):
         for (h, d) in arcs:
             self[d].head = h
 
-    def add_chunkheads(self, arcs):
+    def add_unitheads(self, arcs):
         for (h, d) in arcs:
-            self[d].chunkhead = h
+            self[d].unithead = h
 
     def to_str(self):
         return '\n'.join(t.to_str() for t in self[1:]) + '\n'
