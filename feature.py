@@ -51,7 +51,7 @@ def make_unigram_features(sent, chunk = []):
 
 
 
-def make_features_for_parser(sent, unigrams, h, d, map_func, chunk_info = False):
+def make_features_for_parser(sent, unigrams, h, d, map_func, chunks = [], chunk_info = False):
     features = []
 
     hform, hpos, hmor = unigrams[h]
@@ -59,13 +59,30 @@ def make_features_for_parser(sent, unigrams, h, d, map_func, chunk_info = False)
     h01pos = unigrams[h-1][1] if h >= 1 else '<NA>'
     h02pos = unigrams[h-2][1] if h >= 2 else '<NA>'
     h11pos = unigrams[h+1][1] if h + 1 < len(sent) else '<NA>'
-    h12pos = unigrams[h+1][1] if h + 2 < len(sent) else '<NA>'
-
+    h12pos = unigrams[h+2][1] if h + 2 < len(sent) else '<NA>'
+    # there was a stupid mistake! 
+    # yet another!
     d01pos = unigrams[d-1][1] if d >= 1 else '<NA>'
     d02pos = unigrams[d-2][1] if d >= 2 else '<NA>'
     d11pos = unigrams[d+1][1] if d + 1 < len(sent) else '<NA>'
-    d12pos = unigrams[d+1][1] if d + 2 < len(sent) else '<NA>'
+    d12pos = unigrams[d+2][1] if d + 2 < len(sent) else '<NA>'
 
+
+    # h01pos = unigrams[ancestor(sent, h-1)][1] if h >= 1 else '<NA>'
+    # h02pos = unigrams[ancestor(sent, h-2)][1] if h >= 2 else '<NA>'
+    # h11pos = unigrams[ancestor(sent, h+1)][1] if h + 1 < len(sent) else '<NA>'
+    # h12pos = unigrams[ancestor(sent, h+2)][1] if h + 2 < len(sent) else '<NA>'
+    # d01pos = unigrams[ancestor(sent, d-1)][1] if d >= 1 else '<NA>'
+    # d02pos = unigrams[ancestor(sent, d-2)][1] if d >= 2 else '<NA>'
+    # d11pos = unigrams[ancestor(sent, d+1)][1] if d + 1 < len(sent) else '<NA>'
+    # d12pos = unigrams[ancestor(sent, d+2)][1] if d + 2 < len(sent) else '<NA>'
+
+
+
+    if h < d:
+        flag = 'h<d~'
+    else:
+        flag = 'h>d~'
 
     if h < d:
         features.append(map_func('h.pos~d.pos:%s~%s' % (hpos, dpos)))
@@ -125,22 +142,92 @@ def make_features_for_parser(sent, unigrams, h, d, map_func, chunk_info = False)
 
     # # morph
 
-    # combine with other features
-    # or combine with all features
+    # too simple, need change! 
+    # use some second order features from the chunk parsing
+    # while finding head for the head of a chunk, its children are the second order features
+
+
+
+
+    features.append(map_func(flag + 'ctag:%s~%s' % (sent[h].ctag, sent[d].ctag)))
+    features.append(map_func(flag + 'ctag~hpos~dpos:%s~%s~%s~%s' % (sent[h].ctag, sent[d].ctag, hpos, dpos)))
+
+
+
     if chunk_info:
-
+        deps = all_deps(sent)
         if sent[d].chunkhead:
-
             if sent[d].chunkhead == h:
-                features.append(map_func('head_is_chunkhead'))
-                features.append(map_func('head_is_chunkhead~h.pos~d.pos:%s~%s' % (hpos, dpos)))
-
+                chunk_flag = 'same~'
             else:
-                features.append(map_func('head_is_not_chunkhead'))
-                features.append(map_func('head_is_not_chunkhead~h.pos~d.pos:%s~%s' % (hpos, dpos)))
+                chunk_flag = 'diff~'
         else:
-            features.append(map_func('head_not_in_chunk'))
+            chunk_flag = 'nohead~'
+
+        hld = left_dep(deps, h)
+        hrd = right_dep(deps, h)
+        dld = left_dep(deps, d)
+        drd = right_dep(deps, d)
+        hldpos = unigrams[hld][1] if hld else '<NA>'
+        hrdpos = unigrams[hrd][1] if hrd else '<NA>'
+        dldpos = unigrams[dld][1] if dld else '<NA>'
+        drdpos = unigrams[drd][1] if drd else '<NA>'
+
+        features.append(map_func(flag + chunk_flag))
+        features.append(map_func(flag + chunk_flag + 'h~d~%s~%s' % (hpos, dpos)))
+        features.append(map_func(flag + chunk_flag + 'h~dld~drd~%s~%s~%s' % (hpos, dldpos, drdpos)))
+        features.append(map_func(flag + chunk_flag + 'd~hld~hrd~%s~%s~%s' % (dpos, hldpos, hrdpos)))
+        features.append(map_func(flag + chunk_flag + 'hld~hrd~dld~drd~%s~%s~%s~%s' % (hldpos, hrdpos, dldpos, drdpos)))
+        features.append(map_func(flag + chunk_flag + 'h~d~hld~hrd~dld~drd~%s~%s~%s~%s~%s~%s' % (hpos, dpos, hldpos, hrdpos, dldpos, drdpos)))
+
+
+
+        # if h in deps:
+
+
+        # if sent[d].chunkhead:
+
+        #     if sent[d].chunkhead == h:
+        #         # features.append(map_func(flag + 'head_is_chunkhead'))
+        #         features.append(map_func(flag + 'head_is_chunkhead~h.pos~d.pos:%s~%s' % (hpos, dpos)))
+
+
+        # #         features.append(map_func(flag + 'head_is_not_chunkhead'))
+        # #         features.append(map_func(flag + 'head_is_not_chunkhead~h.pos~d.pos:%s~%s' % (hpos, dpos)))
+        # # else:
+        # #     features.append(map_func(flag + 'head_not_in_chunk'))
 
     return filter(None, features)
+
+
+def all_deps(sent):
+    deps = {}
+    for d in range(1, len(sent)):
+        h = sent[d].chunkhead
+        if h:
+            if h not in deps:
+                deps[h] = [d]
+            else:
+                deps[h].append(d)
+    return deps
+
+
+def left_dep(deps, h):
+    if h in deps and deps[h][0] < h:
+        return deps[h][0]
+
+def right_dep(deps, h):
+    if h in deps and deps[h][-1] > h:
+        return deps[h][-1]
+
+
+def ancestor(sent, d):
+    a = sent[d].chunkhead
+    while a:
+        d = a 
+        a = sent[d].chunkhead
+    return d
+
+
 
 

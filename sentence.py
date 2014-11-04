@@ -43,6 +43,8 @@ class Root(Token):
         self.lemma = 'ROOT'
         self.pos = 'ROOT'
         self.mor = 'ROOT'
+        self.chunkhead = 0
+        self.ctag = 'ROOT'
 
 class Sentence(list):
     def __init__(self):
