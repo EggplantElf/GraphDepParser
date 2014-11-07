@@ -18,7 +18,7 @@ def train(train_file, unit_parser_model, sent_parser_model, unit_feats, sent_fea
 def test(conll_file, unit_parser_model, sent_parser_model, output_file, unit_feats, sent_feats, unit_type = '-chunk', factor = 1.0):
     unit_parser = UnitParser(unit_parser_model) if unit_parser_model else None
     sent_parser = SentParser(sent_parser_model) if sent_parser_model else None
-    get_units = get_chunk if unit_type == '-chunk' else get_clause
+    get_units = get_chunks if unit_type == '-chunk' else get_clauses
     outstream = open(output_file,'w')
     for sent in read_sentence(open(conll_file)):
         if unit_parser:
