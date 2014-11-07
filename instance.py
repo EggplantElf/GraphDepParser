@@ -98,12 +98,13 @@ def get_sent_instances(sent, units, unigrams, sent_map_func, feats):
         sent_instances.append((head, vectors))
     return sent_instances
 
-def get_instances(conll_file, unit_parser, sent_parser, unit_feats, sent_feats):
+def get_instances(conll_file, unit_parser, sent_parser, unit_feats, sent_feats, unit_type = '-chunk'):
     unit_instances, sent_instances = [], []
+    get_units = get_chunk if unit_type == '-chunk' else get_clause
     for sent in read_sentence(open(conll_file), True):
         unigrams = make_unigram_features(sent)
-        good_units = get_chunks(sent, True)
-        units = get_chunks(sent, False)
+        good_units = get_units(sent, True)
+        units = get_units(sent, False)
         if unit_parser:
             unit_instances.extend(get_unit_instances(sent, good_units, unigrams, unit_parser.model.register_feature, unit_feats))
         if sent_parser:

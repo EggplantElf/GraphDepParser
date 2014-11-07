@@ -6,21 +6,23 @@ from labeler import *
 
 
 # what should the sent_instances for training be? just all arcs as in the usual way or reduced arcs which may be unsound
-def train(train_file, unit_parser_model, sent_parser_model, unit_feats, sent_feats): 
+def train(train_file, unit_parser_model, sent_parser_model, unit_feats, sent_feats, unit_type = '-chunk'): 
     unit_parser = UnitParser() if unit_parser_model else None
     sent_parser = SentParser() if sent_parser_model else None 
-    unit_instances, sent_instances = get_instances(train_file, unit_parser, sent_parser, unit_feats, sent_feats)
+    unit_instances, sent_instances = get_instances(train_file, unit_parser, sent_parser, unit_feats, sent_feats, unit_type)
     if unit_parser:
         unit_parser.train(unit_instances, unit_parser_model)
     if sent_parser:
         sent_parser.train(sent_instances, sent_parser_model)
 
-def test(conll_file, unit_parser_model, sent_parser_model, output_file, unit_feats, sent_feats, factor = 1.0):
+def test(conll_file, unit_parser_model, sent_parser_model, output_file, unit_feats, sent_feats, unit_type = '-chunk', factor = 1.0):
     unit_parser = UnitParser(unit_parser_model) if unit_parser_model else None
     sent_parser = SentParser(sent_parser_model) if sent_parser_model else None
+    get_units = get_chunk if unit_type == '-chunk' else get_clause
     outstream = open(output_file,'w')
     for sent in read_sentence(open(conll_file)):
         if unit_parser:
+            # get_chunk or get_clause
             for unit in get_units(sent):
                 unit_parser.predict(sent, unit, unit_feats)
         if sent_parser:
@@ -39,12 +41,6 @@ def train_CLE(train_file, unit_parser_model, sent_parser_model):
 
 
 
-# def train_and_test_factor(train_file, test_file, chunk_parser_model, sent_parser_model, factors):
-#     # train(train_file, chunk_parser_model, sent_parser_model)
-#     for f in factors:
-#         test(test_file, chunk_parser_model, sent_parser_model, '../tmp/wsj_dev.pred.%.1f.conll06' % f, f)
-
-
 ####################################################
 
 # todo:
@@ -53,34 +49,50 @@ def train_CLE(train_file, unit_parser_model, sent_parser_model):
 
 
 if __name__ == '__main__':
-    # train_and_test_factor('../tmp/wsj_train.cx', '../tmp/wsj_dev.cx', '../tmp/chunk.parser', '../tmp/sent.parser', [1, 1.2, 1.5, 2, 3, 5])
-    # train('../tmp/wsj_train.cx', '../tmp/chunk.parser', '../tmp/sent.parser')
-    # test('../tmp/wsj_dev.cx', '../tmp/chunk.parser', '../tmp/sent.parser', '../tmp/wsj_dev.chunk.pred.conll06')
-    # sent_train_test('../tmp/wsj_train.cx', '../tmp/wsj_dev.cx', '../tmp/solo.parser', '../tmp/wsj_dev.solo.pred.conll06')
-    # chunk_train_test('../tmp/wsj_train.cx', '../tmp/clause.parser', '../tmp/wsj_dev.cx', '../tmp/wsj_dev.clause.conll06')
-
 
     flag = sys.argv[1]
+    mode = sys.argv[2]
 
     if flag == '-baseline':
-        train_file = sys.argv[2]
-        sent_parser_model = sys.argv[3]
-        test_file = sys.argv[4]
-        output_file = sys.argv[5]
-        sent_feats = 'a'
-        train(train_file, None, sent_parser_model, None, sent_feats)
-        test(test_file, None, sent_parser_model, output_file, None, sent_feats)
+        sent_feats = 'a'    
+        if mode == '-train':
+            train_file = sys.argv[3]
+            sent_parser_model = sys.argv[4]
+            train(train_file, None, sent_parser_model, None, sent_feats)
+        elif mode == '-test':
+            test_file = sys.argv[3]
+            sent_parser_model = sys.argv[4]
+            output_file = sys.argv[5]
+            test(test_file, None, sent_parser_model, output_file, None, sent_feats)
+
     elif flag == '-IOB':
-        train_file = sys.argv[2]
-        sent_parser_model = sys.argv[3]
-        test_file = sys.argv[4]
-        output_file = sys.argv[5]
         unit_feats = 'ab'
         sent_feats = 'ab'
-        train(train_file, None, sent_parser_model, unit_feats, sent_feats)
-        test(test_file, None, sent_parser_model, output_file, unit_feats, sent_feats)
+        if mode == '-train':
+            train_file = sys.argv[3]
+            sent_parser_model = sys.argv[4]
+            train(train_file, None, sent_parser_model, unit_feats, sent_feats)
+        elif mode == '-test':
+            test_file = sys.argv[3]
+            sent_parser_model = sys.argv[4]
+            output_file = sys.argv[5]
+            test(test_file, None, sent_parser_model, output_file, unit_feats, sent_feats)
 
-
+    elif flag == '-chunk' or flag == '-clause':
+        unit_feats = 'ab'
+        sent_feats = 'a'
+        if mode == '-train':    
+            train_file = sys.argv[3]
+            unit_parser_model = sys.argv[4]
+            sent_parser_model = sys.argv[5]
+            train(train_file, unit_parser_model, sent_parser_model, unit_feats, sent_feats, flag)
+        elif mode == '-test':
+            test_file = sys.argv[3]
+            unit_parser_model = sys.argv[4]
+            sent_parser_model = sys.argv[5]
+            output_file = sys.argv[6]
+            factor = sys.argv[7]
+            test(test_file, unit_parser_model, sent_parser_model, output_file, unit_feats, sent_feats, flag, float(factor))
 
 
 
