@@ -100,7 +100,7 @@ def get_sent_instances(sent, units, unigrams, sent_map_func, feats):
 
 def get_instances(conll_file, unit_parser, sent_parser, unit_feats, sent_feats, unit_type = '-chunk'):
     unit_instances, sent_instances = [], []
-    get_units = get_chunk if unit_type == '-chunk' else get_clause
+    get_units = get_chunks if unit_type == '-chunk' else get_clauses
     for sent in read_sentence(open(conll_file), True):
         unigrams = make_unigram_features(sent)
         good_units = get_units(sent, True)
