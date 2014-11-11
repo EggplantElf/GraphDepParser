@@ -68,7 +68,6 @@ class Sentence(list):
 def read_sentence(filestream, train = False):
     print 'reading sentences ...'
     sentence = Sentence()
-    # sentence.append(Root())
     i = 1
     for line in filestream:
         line = line.rstrip()

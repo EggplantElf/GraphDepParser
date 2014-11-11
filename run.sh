@@ -34,7 +34,6 @@ for f in 1.1 1.2 1.3 1.5 2 3 5
 do
     echo ../tmp/chunk_output.$f.conll06
     python chunk_parser_main.py -chunk -test $test_file $chunk_parser $chunk_sent_parser ../tmp/chunk_output.$f.conll06 $f
-    perl eval07.pl -q  -g $gold -s ../tmp/chunk_output.$f.conll06
 done
 
 # parse clause

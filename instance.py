@@ -42,7 +42,13 @@ def get_clauses(sent, train = False):
             clause.append(t)
     # special treatment for train mode?
     if train:
-        pass
+        good_clauses = []
+        for clause in clauses:
+            if check(sent, clause):
+                good_clauses.append(clause)
+            else:
+                good_clauses.extend([[t] for t in clause])
+        clauses = good_clauses
     return filter(lambda x: len(x) > 1, clauses)
 
 
@@ -89,6 +95,7 @@ def get_sent_instances(sent, units, unigrams, sent_map_func, feats):
     for d in xrange(1, len(sent)):
         head = sent[d].head
         # d in a unit, need test
+        # what does this line mean?
         if any(c for c in units if d in c and sent[d].head in c):
             sent[d].unithead = sent[d].head
         vectors = {}
