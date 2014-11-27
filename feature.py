@@ -45,17 +45,19 @@ def deps(sent, h):
 def make_unigram_features(sent, unit = []):
     # features are triples like ('took', 'VB', 'past')
     if unit:
-        return [(sent[i].form, sent[i].pos, sent[i].mor) for i in unit + [0]]
+        return [(sent[i].form, sent[i].pos) for i in unit + [0]]
     else:
-        return [(sent[i].form, sent[i].pos, sent[i].mor) for i in xrange(len(sent))]
+        return [(sent[i].form, sent[i].pos) for i in xrange(len(sent))]
 
 
 
 def make_features_for_parser(sent, unigrams, h, d, map_func, feats):
     features = []
 
-    hform, hpos, hmor = unigrams[h]
-    dform, dpos, dmor = unigrams[d]  
+    hform, hpos = unigrams[h]
+    dform, dpos = unigrams[d]  
+
+
     h01pos = unigrams[h-1][1] if h >= 1 else '<NA>'
     h02pos = unigrams[h-2][1] if h >= 2 else '<NA>'
     h11pos = unigrams[h+1][1] if h + 1 < len(sent) else '<NA>'
@@ -67,7 +69,8 @@ def make_features_for_parser(sent, unigrams, h, d, map_func, feats):
     d11pos = unigrams[d+1][1] if d + 1 < len(sent) else '<NA>'
     d12pos = unigrams[d+2][1] if d + 2 < len(sent) else '<NA>'
 
-
+    # # what does ancestor() do? get the head of each chunk as a representation of the chunk
+    # # might make a difference while parsing with chunk information
     # h01pos = unigrams[ancestor(sent, h-1)][1] if h >= 1 else '<NA>'
     # h02pos = unigrams[ancestor(sent, h-2)][1] if h >= 2 else '<NA>'
     # h11pos = unigrams[ancestor(sent, h+1)][1] if h + 1 < len(sent) else '<NA>'
@@ -77,53 +80,99 @@ def make_features_for_parser(sent, unigrams, h, d, map_func, feats):
     # d11pos = unigrams[ancestor(sent, d+1)][1] if d + 1 < len(sent) else '<NA>'
     # d12pos = unigrams[ancestor(sent, d+2)][1] if d + 2 < len(sent) else '<NA>'
 
-
-
-    if h < d:
-        flag = 'h<d~'
+    offset = h - d
+    # flag = '%d~' % offset
+    if -5 < offset < 5:
+        flag = '1s~%d~' % offset
     else:
-        flag = 'h>d~'
+        flag = '5s~%d~' % (offset / 5 * 5)
 
-    features.append(map_func(flag + 'h.pos~d.pos:%s~%s' % (hpos, dpos)))
-    features.append(map_func(flag + 'h.pos~d.form:%s~%s' % (hpos, dform)))
-    features.append(map_func(flag + 'h.form~d.pos:%s~%s' % (hform, dpos)))
-    features.append(map_func(flag + 'h.form~d.form:%s~%s' % (hform, dform)))
-    features.append(map_func(flag + 'h.mor~d.mor:%s~%s' % (hmor, dmor)))
-    features.append(map_func(flag + 'h.mor~h.pos~d.mor~d.pos:%s~%s~%s~%s' % (hmor, hpos, dmor, dpos)))
-
-    features.append(map_func(flag + 'h~h+1~d~d+1:%s~%s~%s~%s' % (hpos, h11pos, dpos, d11pos)))
-    features.append(map_func(flag + 'h~h+1~d~d-1:%s~%s~%s~%s' % (hpos, h11pos, dpos, d01pos)))
-    features.append(map_func(flag + 'h~h-1~d~d+1:%s~%s~%s~%s' % (hpos, h01pos, dpos, d11pos)))
-    features.append(map_func(flag + 'h~h-1~d~d-1:%s~%s~%s~%s' % (hpos, h01pos, dpos, d01pos)))
-    features.append(map_func(flag + 'h~h+1~h+2~d:%s~%s~%s~%s' % (hpos, h11pos, h12pos, dpos))) #new
-    features.append(map_func(flag + 'h~h-1~h-2~d:%s~%s~%s~%s' % (hpos, h01pos, h02pos, dpos))) #new
-    features.append(map_func(flag + 'h~d~d+1~d+2:%s~%s~%s~%s' % (hpos, dpos, d11pos, d12pos)))
-    features.append(map_func(flag + 'h~d~d-1~d-2:%s~%s~%s~%s' % (hpos, dpos, d01pos, d02pos)))
-    features.append(map_func(flag + 'h~d+1~d~d-1:%s~%s~%s~%s' % (hpos, d11pos, dpos, d01pos)))
-    features.append(map_func(flag + 'h+1~h~h-1~d:%s~%s~%s~%s' % (h11pos, hpos, h01pos, dpos)))
-
-    offset = h -d
-    if -10 < offset < 10:
-        features.append(map_func('1step_offset:%d' % offset))
+    if h > d:
+        fg = 'h>d~'
     else:
-        features.append(map_func('4step_offset:%d' % (offset / 4 * 4)))
+        fg = 'h<d~'
+
+
+    # a) 
+    features.append(map_func('$a~' + fg + 'h.form~h.pos:%s~%s' % (hform, hpos)))
+    features.append(map_func('$b~' + fg + 'h.form:%s' % (hform)))
+    features.append(map_func('$c~' + fg + 'h.h.pos:%s' % (hpos)))
+
+    features.append(map_func('$d~' + fg + 'd.form~d.pos:%s~%s' % (dform, dpos)))
+    features.append(map_func('$e~' + fg + 'd.form:%s' % (dform)))
+    features.append(map_func('$f~' + fg + 'd.d.pos:%s' % (dpos)))
+
+    # b)
+    # what about 5-gram prefix?
+    features.append(map_func('$g~' + fg + 'h.form~h.pos~d.form~d.pos:%s~%s~%s~%s' % (hform, hpos, dform, dpos)))
+    features.append(map_func('$h~' + fg + 'h.pos~d.form~d.pos:%s~%s~%s' % (hpos, dform, dpos)))
+    features.append(map_func('$i~' + fg + 'h.form~d.form~d.pos:%s~%s~%s' % (hform, dform, dpos)))
+    features.append(map_func('$j~' + fg + 'h.form~h.pos~d.pos:%s~%s~%s' % (hform, hpos, dpos)))
+    features.append(map_func('$k~' + fg + 'h.form~h.pos~d.form:%s~%s~%s' % (hform, hpos, dform)))
+    features.append(map_func('$l~' + fg + 'h.form~d.form:%s~%s' % (hform, dform)))
+    features.append(map_func('$m~' + fg + 'h.pos~d.pos:%s~%s' % (hpos, dpos)))
+    features.append(map_func('$n~' + fg + 'h.pos~d.form:%s~%s' % (hpos, dform)))
+    features.append(map_func('$o~' + fg + 'h.form~d.pos:%s~%s' % (hform, dpos)))
+
+
+    # c)
+    # strange in between pos
+
+    for b in range(min(h, d) + 1, max(h, d)):
+        bpos = unigrams[b][1]
+        features.append(map_func('$p~' + flag + 'h.pos~b.pos~d.pos:%s~%s~%s' % (hpos, bpos, dpos)))
+
+    features.append(map_func('$q~' + flag + 'all-b.pos:%s' % '~'.join(map(lambda x: unigrams[x][1], range(min(h, d), max(h, d) + 1)))))
+
+
+    features.append(map_func('$r~' + flag + 'h~h+1~d~d-1:%s~%s~%s~%s' % (hpos, h11pos, dpos, d01pos)))
+    features.append(map_func('$s~' + flag + 'h~h-1~d~d+1:%s~%s~%s~%s' % (hpos, h01pos, dpos, d11pos)))
+    features.append(map_func('$t~' + flag + 'h~h+1~d~d+1:%s~%s~%s~%s' % (hpos, h11pos, dpos, d11pos)))
+    features.append(map_func('$u~' + flag + 'h~h-1~d~d-1:%s~%s~%s~%s' % (hpos, h01pos, dpos, d01pos)))
+
+    # d) new 
+    features.append(map_func('$v~' + flag + 'h~d~d-1~d-2:%s~%s~%s~%s' % (hpos, dpos, d01pos, d02pos)))
+    features.append(map_func('$w~' + flag + 'h~d~d+1~d+2:%s~%s~%s~%s' % (hpos, dpos, d11pos, d12pos)))
+    features.append(map_func('$x~' + flag + 'h~d+1~d~d-1:%s~%s~%s~%s' % (hpos, d11pos, dpos, d01pos)))
+    features.append(map_func('$y~' + flag + 'h-1~h~h+1~d:%s~%s~%s~%s' % (h01pos, hpos, h11pos, dpos)))
+    features.append(map_func('$z~' + flag + 'h.pos~d.form:%s~%s' % (hpos, dform)))
+    features.append(map_func('$A~' + flag + 'h.form~d.pos:%s~%s' % (hpos, dpos)))
+
+    
+
+
+    # features.append(map_func(flag + 'h.pos~d.pos:%s~%s' % (hpos, dpos)))
+    # features.append(map_func(flag + 'h.pos~d.form:%s~%s' % (hpos, dform)))
+    # features.append(map_func(flag + 'h.form~d.pos:%s~%s' % (hform, dpos)))
+    # features.append(map_func(flag + 'h.form~d.form:%s~%s' % (hform, dform)))
+
+    # features.append(map_func(flag + 'h~h+1~d~d+1:%s~%s~%s~%s' % (hpos, h11pos, dpos, d11pos)))
+    # features.append(map_func(flag + 'h~h+1~d~d-1:%s~%s~%s~%s' % (hpos, h11pos, dpos, d01pos)))
+    # features.append(map_func(flag + 'h~h-1~d~d+1:%s~%s~%s~%s' % (hpos, h01pos, dpos, d11pos)))
+    # features.append(map_func(flag + 'h~h-1~d~d-1:%s~%s~%s~%s' % (hpos, h01pos, dpos, d01pos)))
+    # features.append(map_func(flag + 'h~h+1~h+2~d:%s~%s~%s~%s' % (hpos, h11pos, h12pos, dpos))) #new
+    # features.append(map_func(flag + 'h~h-1~h-2~d:%s~%s~%s~%s' % (hpos, h01pos, h02pos, dpos))) #new
+    # features.append(map_func(flag + 'h~d~d+1~d+2:%s~%s~%s~%s' % (hpos, dpos, d11pos, d12pos)))
+    # features.append(map_func(flag + 'h~d~d-1~d-2:%s~%s~%s~%s' % (hpos, dpos, d01pos, d02pos)))
+    # features.append(map_func(flag + 'h~d+1~d~d-1:%s~%s~%s~%s' % (hpos, d11pos, dpos, d01pos)))
+    # features.append(map_func(flag + 'h+1~h~h-1~d:%s~%s~%s~%s' % (h11pos, hpos, h01pos, dpos)))
 
 
 
 
-    # # features.append(map_func('offset:%d' % (h - d)))
-    if h < d:
-        features.append(map_func('h<d~b.pos:%s' % '~'.join(map(lambda x: unigrams[x][1], range(h, d+1)))))
-    else:
-        features.append(map_func('d<h~b.pos:%s' % '~'.join(map(lambda x: unigrams[x][1], range(d, h+1)))))
-    # # features.append(map_func('h<d~between.pos~mor:%s' % '~'.join(map(lambda x: '%s~%s' % (sent[x].pos, sent[x].mor), range(h, d+1)))))
-    # # features.append(map_func('d<h~between.pos~mor:%s' % '~'.join(map(lambda x: '%s~%s' % (sent[x].pos, sent[x].mor), range(d, h+1)))))
 
-    # # morph
+    # if h < d:
+        # features.append(map_func(flag + 'b.pos:%s' % '~'.join(map(lambda x: unigrams[x][1], range(h, d+1)))))
+    # else:
+    #     features.append(map_func(flag + 'b.pos:%s' % '~'.join(map(lambda x: unigrams[x][1], range(d, h+1)))))
+    # # # features.append(map_func('h<d~between.pos~mor:%s' % '~'.join(map(lambda x: '%s~%s' % (sent[x].pos, sent[x].mor), range(h, d+1)))))
+    # # # features.append(map_func('d<h~between.pos~mor:%s' % '~'.join(map(lambda x: '%s~%s' % (sent[x].pos, sent[x].mor), range(d, h+1)))))
 
-    # too simple, need change! 
-    # use some second order features from the unit parsing
-    # while finding head for the head of a unit, its children are the second order features
+    # # # morph
+
+    # # too simple, need change! 
+    # # use some second order features from the unit parsing
+    # # while finding head for the head of a unit, its children are the second order features
 
 
 

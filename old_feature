@@ -1,0 +1,116 @@
+
+def make_features_for_parser(sent, unigrams, h, d, map_func, feats):
+    features = []
+
+    hform, hpos, hmor = unigrams[h]
+    dform, dpos, dmor = unigrams[d]  
+    h01pos = unigrams[h-1][1] if h >= 1 else '<NA>'
+    h02pos = unigrams[h-2][1] if h >= 2 else '<NA>'
+    h11pos = unigrams[h+1][1] if h + 1 < len(sent) else '<NA>'
+    h12pos = unigrams[h+2][1] if h + 2 < len(sent) else '<NA>'
+    # there was a stupid mistake! 
+    # yet another!
+    d01pos = unigrams[d-1][1] if d >= 1 else '<NA>'
+    d02pos = unigrams[d-2][1] if d >= 2 else '<NA>'
+    d11pos = unigrams[d+1][1] if d + 1 < len(sent) else '<NA>'
+    d12pos = unigrams[d+2][1] if d + 2 < len(sent) else '<NA>'
+
+
+    # h01pos = unigrams[ancestor(sent, h-1)][1] if h >= 1 else '<NA>'
+    # h02pos = unigrams[ancestor(sent, h-2)][1] if h >= 2 else '<NA>'
+    # h11pos = unigrams[ancestor(sent, h+1)][1] if h + 1 < len(sent) else '<NA>'
+    # h12pos = unigrams[ancestor(sent, h+2)][1] if h + 2 < len(sent) else '<NA>'
+    # d01pos = unigrams[ancestor(sent, d-1)][1] if d >= 1 else '<NA>'
+    # d02pos = unigrams[ancestor(sent, d-2)][1] if d >= 2 else '<NA>'
+    # d11pos = unigrams[ancestor(sent, d+1)][1] if d + 1 < len(sent) else '<NA>'
+    # d12pos = unigrams[ancestor(sent, d+2)][1] if d + 2 < len(sent) else '<NA>'
+
+    offset = h - d
+    if -10 < offset < 10:
+        flag = '1step~%d~' % offset
+    else:
+        flag = '4step~%d~' % (offset / 4 * 4)
+
+
+    # if h < d:
+    #     flag = 'h<d~%d~' % offset
+    # else:
+    #     flag = 'h>d~%d~' % offset
+
+
+
+    features.append(map_func(flag + 'h.pos~d.pos:%s~%s' % (hpos, dpos)))
+    features.append(map_func(flag + 'h.pos~d.form:%s~%s' % (hpos, dform)))
+    features.append(map_func(flag + 'h.form~d.pos:%s~%s' % (hform, dpos)))
+    features.append(map_func(flag + 'h.form~d.form:%s~%s' % (hform, dform)))
+    # features.append(map_func(flag + 'h.mor~d.mor:%s~%s' % (hmor, dmor)))
+    # features.append(map_func(flag + 'h.mor~h.pos~d.mor~d.pos:%s~%s~%s~%s' % (hmor, hpos, dmor, dpos)))
+
+    features.append(map_func(flag + 'h~h+1~d~d+1:%s~%s~%s~%s' % (hpos, h11pos, dpos, d11pos)))
+    features.append(map_func(flag + 'h~h+1~d~d-1:%s~%s~%s~%s' % (hpos, h11pos, dpos, d01pos)))
+    features.append(map_func(flag + 'h~h-1~d~d+1:%s~%s~%s~%s' % (hpos, h01pos, dpos, d11pos)))
+    features.append(map_func(flag + 'h~h-1~d~d-1:%s~%s~%s~%s' % (hpos, h01pos, dpos, d01pos)))
+    features.append(map_func(flag + 'h~h+1~h+2~d:%s~%s~%s~%s' % (hpos, h11pos, h12pos, dpos))) #new
+    features.append(map_func(flag + 'h~h-1~h-2~d:%s~%s~%s~%s' % (hpos, h01pos, h02pos, dpos))) #new
+    features.append(map_func(flag + 'h~d~d+1~d+2:%s~%s~%s~%s' % (hpos, dpos, d11pos, d12pos)))
+    features.append(map_func(flag + 'h~d~d-1~d-2:%s~%s~%s~%s' % (hpos, dpos, d01pos, d02pos)))
+    features.append(map_func(flag + 'h~d+1~d~d-1:%s~%s~%s~%s' % (hpos, d11pos, dpos, d01pos)))
+    features.append(map_func(flag + 'h+1~h~h-1~d:%s~%s~%s~%s' % (h11pos, hpos, h01pos, dpos)))
+
+    # if -10 < offset < 10:
+    #     features.append(map_func('1step_offset:%d' % offset))
+    # else:
+    #     features.append(map_func('4step_offset:%d' % (offset / 4 * 4)))
+
+
+
+
+    # # features.append(map_func('offset:%d' % (h - d)))
+    if h < d:
+        features.append(map_func(flag + 'b.pos:%s' % '~'.join(map(lambda x: unigrams[x][1], range(h, d+1)))))
+    else:
+        features.append(map_func(flag + 'b.pos:%s' % '~'.join(map(lambda x: unigrams[x][1], range(d, h+1)))))
+    # # features.append(map_func('h<d~between.pos~mor:%s' % '~'.join(map(lambda x: '%s~%s' % (sent[x].pos, sent[x].mor), range(h, d+1)))))
+    # # features.append(map_func('d<h~between.pos~mor:%s' % '~'.join(map(lambda x: '%s~%s' % (sent[x].pos, sent[x].mor), range(d, h+1)))))
+
+    # # morph
+
+    # too simple, need change! 
+    # use some second order features from the unit parsing
+    # while finding head for the head of a unit, its children are the second order features
+
+
+
+    if 'b' in feats:
+        features.append(map_func(flag + 'ctag:%s~%s' % (sent[h].ctag, sent[d].ctag)))
+        features.append(map_func(flag + 'ctag~hpos~dpos:%s~%s~%s~%s' % (sent[h].ctag, sent[d].ctag, hpos, dpos)))
+
+
+
+    if 'c' in feats:
+        deps = all_deps(sent)
+        if sent[d].unithead:
+            if sent[d].unithead == h:
+                unit_flag = 'same~'
+            else:
+                unit_flag = 'diff~'
+        else:
+            unit_flag = 'nohead~'
+
+        hld = left_dep(deps, h)
+        hrd = right_dep(deps, h)
+        dld = left_dep(deps, d)
+        drd = right_dep(deps, d)
+        hldpos = unigrams[hld][1] if hld else '<NA>'
+        hrdpos = unigrams[hrd][1] if hrd else '<NA>'
+        dldpos = unigrams[dld][1] if dld else '<NA>'
+        drdpos = unigrams[drd][1] if drd else '<NA>'
+
+        features.append(map_func(flag + unit_flag))
+        features.append(map_func(flag + unit_flag + 'h~d~%s~%s' % (hpos, dpos)))
+        features.append(map_func(flag + unit_flag + 'h~dld~drd~%s~%s~%s' % (hpos, dldpos, drdpos)))
+        features.append(map_func(flag + unit_flag + 'd~hld~hrd~%s~%s~%s' % (dpos, hldpos, hrdpos)))
+        features.append(map_func(flag + unit_flag + 'hld~hrd~dld~drd~%s~%s~%s~%s' % (hldpos, hrdpos, dldpos, drdpos)))
+        features.append(map_func(flag + unit_flag + 'h~d~hld~hrd~dld~drd~%s~%s~%s~%s~%s~%s' % (hpos, dpos, hldpos, hrdpos, dldpos, drdpos)))
+
+    return filter(None, features)

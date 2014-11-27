@@ -33,7 +33,10 @@ def stat(cx_file):
 
             if not check(chunk):
                 wrong_chunk += 1
-
+                for w in chunk:
+                    print w
+                print '-' * 20
+                print 
 
         for clause in clauses:
             l = len(clause)
@@ -44,6 +47,7 @@ def stat(cx_file):
 
             if not check(clause):
                 wrong_clause += 1
+
 
     print 'total sents:', total
 
@@ -90,7 +94,8 @@ def read_sentences(cx_file):
             ctag = items[10]
             tid = int(items[0])
             hid = int(items[6])
-            sent.append((ctag, tid, hid))
+            word = items[1]
+            sent.append((ctag, tid, hid, word))
         else:
             yield sent
             sent = [('', -1)]
@@ -100,31 +105,31 @@ def read_sentences(cx_file):
 def get_chunks(sent):
     chunks = []
     chunk = []
-    for (ctag, tid, hid) in sent[1:]:
+    for (ctag, tid, hid, word) in sent[1:]:
         if ctag[0] in ['B', 'O']:
             if chunk:
                 chunks.append(chunk)
-            chunk = [(ctag, tid, hid)]
+            chunk = [(ctag, tid, hid, word)]
         else:
-            chunk.append((ctag, tid, hid))
+            chunk.append((ctag, tid, hid, word))
     chunks.append(chunk)
     return filter(lambda x: x[0][0] != 'O', chunks)
 
 def get_clauses(sent):
     clauses = []
     clause = []
-    for (ctag, tid, hid) in sent[1:]:
+    for (ctag, tid, hid, word) in sent[1:]:
         if ctag[0] == 'O':
             if clause:
                 clauses.append(clause)
             clause = []
         else:
-            clause.append((ctag, tid, hid))
+            clause.append((ctag, tid, hid, word))
     return clauses
 
 def check(unit):
-    tids = [tid for (ctag, tid, hid) in unit]
-    hids = [hid for (ctag, tid, hid) in unit]
+    tids = [tid for (ctag, tid, hid, word) in unit]
+    hids = [hid for (ctag, tid, hid, word) in unit]
     return len([h for h in hids if h not in tids]) == 1
 
 
