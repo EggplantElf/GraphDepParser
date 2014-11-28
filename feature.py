@@ -92,27 +92,40 @@ def make_features_for_parser(sent, unigrams, h, d, map_func, feats):
     else:
         fg = 'h<d~'
 
+    if offset > 0:
+        if offset == 1:
+            frog = '+0s~'
+        else:
+            frog = '+1s~'
+    else:
+        if offset == -1:
+            frog = '-0s~'
+        else:
+            frog = '-1s~'
+
 
     # a) 
-    features.append(map_func('$a~' + fg + 'h.form~h.pos:%s~%s' % (hform, hpos)))
-    features.append(map_func('$b~' + fg + 'h.form:%s' % (hform)))
-    features.append(map_func('$c~' + fg + 'h.h.pos:%s' % (hpos)))
+    features.append(map_func('$a~' + frog + 'h.form~h.pos:%s~%s' % (hform, hpos)))
+    features.append(map_func('$b~' + frog + 'h.form:%s' % (hform)))
+    features.append(map_func('$c~' + frog + 'h.h.pos:%s' % (hpos)))
 
-    features.append(map_func('$d~' + fg + 'd.form~d.pos:%s~%s' % (dform, dpos)))
-    features.append(map_func('$e~' + fg + 'd.form:%s' % (dform)))
-    features.append(map_func('$f~' + fg + 'd.d.pos:%s' % (dpos)))
+    features.append(map_func('$d~' + frog + 'd.form~d.pos:%s~%s' % (dform, dpos)))
+    features.append(map_func('$e~' + frog + 'd.form:%s' % (dform)))
+    features.append(map_func('$f~' + frog + 'd.d.pos:%s' % (dpos)))
 
     # b)
     # what about 5-gram prefix?
-    features.append(map_func('$g~' + fg + 'h.form~h.pos~d.form~d.pos:%s~%s~%s~%s' % (hform, hpos, dform, dpos)))
-    features.append(map_func('$h~' + fg + 'h.pos~d.form~d.pos:%s~%s~%s' % (hpos, dform, dpos)))
-    features.append(map_func('$i~' + fg + 'h.form~d.form~d.pos:%s~%s~%s' % (hform, dform, dpos)))
-    features.append(map_func('$j~' + fg + 'h.form~h.pos~d.pos:%s~%s~%s' % (hform, hpos, dpos)))
-    features.append(map_func('$k~' + fg + 'h.form~h.pos~d.form:%s~%s~%s' % (hform, hpos, dform)))
-    features.append(map_func('$l~' + fg + 'h.form~d.form:%s~%s' % (hform, dform)))
-    features.append(map_func('$m~' + fg + 'h.pos~d.pos:%s~%s' % (hpos, dpos)))
-    features.append(map_func('$n~' + fg + 'h.pos~d.form:%s~%s' % (hpos, dform)))
-    features.append(map_func('$o~' + fg + 'h.form~d.pos:%s~%s' % (hform, dpos)))
+    features.append(map_func('$g~' + frog + 'h.form~h.pos~d.form~d.pos:%s~%s~%s~%s' % (hform, hpos, dform, dpos)))
+    features.append(map_func('$h~' + frog + 'h.pos~d.form~d.pos:%s~%s~%s' % (hpos, dform, dpos)))
+    features.append(map_func('$i~' + frog + 'h.form~d.form~d.pos:%s~%s~%s' % (hform, dform, dpos)))
+    features.append(map_func('$j~' + frog + 'h.form~h.pos~d.pos:%s~%s~%s' % (hform, hpos, dpos)))
+    features.append(map_func('$k~' + frog + 'h.form~h.pos~d.form:%s~%s~%s' % (hform, hpos, dform)))
+    features.append(map_func('$l~' + frog + 'h.form~d.form:%s~%s' % (hform, dform)))
+    features.append(map_func('$m~' + frog + 'h.pos~d.pos:%s~%s' % (hpos, dpos)))
+    features.append(map_func('$n~' + frog + 'h.pos~d.form:%s~%s' % (hpos, dform)))
+    features.append(map_func('$o~' + frog + 'h.form~d.pos:%s~%s' % (hform, dpos)))
+
+
 
 
     # c)
@@ -120,25 +133,66 @@ def make_features_for_parser(sent, unigrams, h, d, map_func, feats):
 
     for b in range(min(h, d) + 1, max(h, d)):
         bpos = unigrams[b][1]
-        features.append(map_func('$p~' + flag + 'h.pos~b.pos~d.pos:%s~%s~%s' % (hpos, bpos, dpos)))
+        features.append(map_func('$p~' + frog + 'h.pos~b.pos~d.pos:%s~%s~%s' % (hpos, bpos, dpos)))
 
-    features.append(map_func('$q~' + flag + 'all-b.pos:%s' % '~'.join(map(lambda x: unigrams[x][1], range(min(h, d), max(h, d) + 1)))))
+    features.append(map_func('$q~' + frog + 'all-b.pos:%s' % '~'.join(map(lambda x: unigrams[x][1], range(min(h, d), max(h, d) + 1)))))
 
 
-    features.append(map_func('$r~' + flag + 'h~h+1~d~d-1:%s~%s~%s~%s' % (hpos, h11pos, dpos, d01pos)))
-    features.append(map_func('$s~' + flag + 'h~h-1~d~d+1:%s~%s~%s~%s' % (hpos, h01pos, dpos, d11pos)))
-    features.append(map_func('$t~' + flag + 'h~h+1~d~d+1:%s~%s~%s~%s' % (hpos, h11pos, dpos, d11pos)))
-    features.append(map_func('$u~' + flag + 'h~h-1~d~d-1:%s~%s~%s~%s' % (hpos, h01pos, dpos, d01pos)))
+    features.append(map_func('$r~' + frog + 'h~h+1~d~d-1:%s~%s~%s~%s' % (hpos, h11pos, dpos, d01pos)))
+    features.append(map_func('$s~' + frog + 'h~h-1~d~d+1:%s~%s~%s~%s' % (hpos, h01pos, dpos, d11pos)))
+    features.append(map_func('$t~' + frog + 'h~h+1~d~d+1:%s~%s~%s~%s' % (hpos, h11pos, dpos, d11pos)))
+    features.append(map_func('$u~' + frog + 'h~h-1~d~d-1:%s~%s~%s~%s' % (hpos, h01pos, dpos, d01pos)))
 
     # d) new 
-    features.append(map_func('$v~' + flag + 'h~d~d-1~d-2:%s~%s~%s~%s' % (hpos, dpos, d01pos, d02pos)))
-    features.append(map_func('$w~' + flag + 'h~d~d+1~d+2:%s~%s~%s~%s' % (hpos, dpos, d11pos, d12pos)))
-    features.append(map_func('$x~' + flag + 'h~d+1~d~d-1:%s~%s~%s~%s' % (hpos, d11pos, dpos, d01pos)))
-    features.append(map_func('$y~' + flag + 'h-1~h~h+1~d:%s~%s~%s~%s' % (h01pos, hpos, h11pos, dpos)))
-    features.append(map_func('$z~' + flag + 'h.pos~d.form:%s~%s' % (hpos, dform)))
-    features.append(map_func('$A~' + flag + 'h.form~d.pos:%s~%s' % (hpos, dpos)))
+    features.append(map_func('$v~' + frog + 'h~d~d-1~d-2:%s~%s~%s~%s' % (hpos, dpos, d01pos, d02pos)))
+    features.append(map_func('$w~' + frog + 'h~d~d+1~d+2:%s~%s~%s~%s' % (hpos, dpos, d11pos, d12pos)))
+    features.append(map_func('$x~' + frog + 'h~d+1~d~d-1:%s~%s~%s~%s' % (hpos, d11pos, dpos, d01pos)))
+    features.append(map_func('$y~' + frog + 'h-1~h~h+1~d:%s~%s~%s~%s' % (h01pos, hpos, h11pos, dpos)))
+    features.append(map_func('$z~' + frog + 'h.pos~d.form:%s~%s' % (hpos, dform)))
+    features.append(map_func('$A~' + frog + 'h.form~d.pos:%s~%s' % (hpos, dpos)))
 
     
+
+    # features.append(map_func('$xa~' + flag + 'h.form~h.pos:%s~%s' % (hform, hpos)))
+    # features.append(map_func('$xb~' + flag + 'h.form:%s' % (hform)))
+    # features.append(map_func('$xc~' + flag + 'h.h.pos:%s' % (hpos)))
+
+    # features.append(map_func('$xd~' + flag + 'd.form~d.pos:%s~%s' % (dform, dpos)))
+    # features.append(map_func('$xe~' + flag + 'd.form:%s' % (dform)))
+    # features.append(map_func('$xf~' + flag + 'd.d.pos:%s' % (dpos)))
+
+    # # b)
+    # # what about 5-gram prefix?
+    # features.append(map_func('$xg~' + flag + 'h.form~h.pos~d.form~d.pos:%s~%s~%s~%s' % (hform, hpos, dform, dpos)))
+    # features.append(map_func('$xh~' + flag + 'h.pos~d.form~d.pos:%s~%s~%s' % (hpos, dform, dpos)))
+    # features.append(map_func('$xi~' + flag + 'h.form~d.form~d.pos:%s~%s~%s' % (hform, dform, dpos)))
+    # features.append(map_func('$xj~' + flag + 'h.form~h.pos~d.pos:%s~%s~%s' % (hform, hpos, dpos)))
+    # features.append(map_func('$xk~' + flag + 'h.form~h.pos~d.form:%s~%s~%s' % (hform, hpos, dform)))
+    # features.append(map_func('$xl~' + flag + 'h.form~d.form:%s~%s' % (hform, dform)))
+    # features.append(map_func('$xm~' + flag + 'h.pos~d.pos:%s~%s' % (hpos, dpos)))
+    # features.append(map_func('$xn~' + flag + 'h.pos~d.form:%s~%s' % (hpos, dform)))
+    # features.append(map_func('$xo~' + flag + 'h.form~d.pos:%s~%s' % (hform, dpos)))
+
+
+
+
+    # c)
+    # strange in between pos
+# used for 86.1
+    # for b in range(min(h, d) + 1, max(h, d)):
+    #     bpos = unigrams[b][1]
+    #     features.append(map_func('$xp~' + flag + 'h.pos~b.pos~d.pos:%s~%s~%s' % (hpos, bpos, dpos)))
+
+    # features.append(map_func('$xq~' + flag + 'all-b.pos:%s' % '~'.join(map(lambda x: unigrams[x][1], range(min(h, d), max(h, d) + 1)))))
+
+
+    # features.append(map_func('$xr~' + flag + 'h~h+1~d~d-1:%s~%s~%s~%s' % (hpos, h11pos, dpos, d01pos)))
+    # features.append(map_func('$xs~' + flag + 'h~h-1~d~d+1:%s~%s~%s~%s' % (hpos, h01pos, dpos, d11pos)))
+    # features.append(map_func('$xt~' + flag + 'h~h+1~d~d+1:%s~%s~%s~%s' % (hpos, h11pos, dpos, d11pos)))
+    # features.append(map_func('$xu~' + flag + 'h~h-1~d~d-1:%s~%s~%s~%s' % (hpos, h01pos, dpos, d01pos)))
+#/ used for 86.1
+
+
 
 
     # features.append(map_func(flag + 'h.pos~d.pos:%s~%s' % (hpos, dpos)))
