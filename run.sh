@@ -28,21 +28,21 @@ python chunk_parser_main.py -IOB -train $train_file $IOB_sent_parser
 python chunk_parser_main.py -IOB -test $test_file $IOB_sent_parser $IOB_output
 
 
-# # parse chunk
-# # python chunk_parser_main.py -chunk -train $train_file $chunk_parser $chunk_sent_parser 
-# for f in 1.1 1.2 1.3 1.5 2 3 5
-# do
-#     echo ../tmp/weblogs.chunk_output.$f.conll06
-#     python chunk_parser_main.py -chunk -test $test_file $chunk_parser $chunk_sent_parser ../tmp/weblogs.chunk_output.$f.conll06 $f
-# done
+# parse chunk
+python chunk_parser_main.py -chunk -train $train_file $chunk_parser $chunk_sent_parser 
+for f in 1.1 1.2 1.3 1.5 2 3 5
+do
+    echo ../tmp/wsj_dev.chunk_output.$f.conll06
+    python chunk_parser_main.py -chunk -test $test_file $chunk_parser $chunk_sent_parser ../tmp/wsj_dev.chunk_output.$f.conll06 $f
+done
 
-# # parse clause
-# python chunk_parser_main.py -clause -train $train_file $clause_parser $clause_sent_parser 
-# for f in 1.1 1.2 1.3 1.5 2 3 5
-# do
-#     echo ../tmp/weblogs.clause_output.$f.conll06
-#     python chunk_parser_main.py -clause -test $test_file $clause_parser $clause_sent_parser ../tmp/weblogs.clause_output.$f.conll06 $f
-# done
+# parse clause
+python chunk_parser_main.py -clause -train $train_file $clause_parser $clause_sent_parser 
+for f in 1.1 1.2 1.3 1.5 2 3 5
+do
+    echo ../tmp/wsj_dev.clause_output.$f.conll06
+    python chunk_parser_main.py -clause -test $test_file $clause_parser $clause_sent_parser ../tmp/wsj_dev.clause_output.$f.conll06 $f
+done
 
 # results
 echo baseline
@@ -51,15 +51,15 @@ perl eval07.pl -q  -g $gold -s $baseline_output
 echo IOB
 perl eval07.pl -q  -g $gold -s $IOB_output
 
-# for f in 1.1 1.2 1.3 1.5 2 3 5
-# do
-#     echo ../tmp/weblogs.chunk_output.$f.conll06
-#     perl eval07.pl -q  -g $gold -s ../tmp/weblogs.chunk_output.$f.conll06  
-# done
+for f in 1.1 1.2 1.3 1.5 2 3 5
+do
+    echo ../tmp/wsj_dev.chunk_output.$f.conll06
+    perl eval07.pl -q  -g $gold -s ../tmp/wsj_dev.chunk_output.$f.conll06  
+done
 
-# for f in 1.1 1.2 1.3 1.5 2 3 5
-# do
-#     echo ../tmp/weblogs.clause_output.$f.conll06
-#     perl eval07.pl -q  -g $gold -s ../tmp/weblogs.clause_output.$f.conll06  
-# done
+for f in 1.1 1.2 1.3 1.5 2 3 5
+do
+    echo ../tmp/wsj_dev.clause_output.$f.conll06
+    perl eval07.pl -q  -g $gold -s ../tmp/wsj_dev.clause_output.$f.conll06  
+done
 
