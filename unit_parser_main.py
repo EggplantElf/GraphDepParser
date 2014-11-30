@@ -66,20 +66,19 @@ if __name__ == '__main__':
             test(test_file, None, sent_parser_model, output_file, None, sent_feats)
 
     elif flag == '-IOB':
-        unit_feats = 'ab'
         sent_feats = 'ab'
         if mode == '-train':
             train_file = sys.argv[3]
             sent_parser_model = sys.argv[4]
-            train(train_file, None, sent_parser_model, unit_feats, sent_feats)
+            train(train_file, None, sent_parser_model, None, sent_feats)
         elif mode == '-test':
             test_file = sys.argv[3]
             sent_parser_model = sys.argv[4]
             output_file = sys.argv[5]
-            test(test_file, None, sent_parser_model, output_file, unit_feats, sent_feats)
+            test(test_file, None, sent_parser_model, output_file, None, sent_feats)
 
     elif flag == '-chunk' or flag == '-clause':
-        unit_feats = 'ab'
+        unit_feats = 'a'
         sent_feats = 'a'
         if mode == '-train':    
             train_file = sys.argv[3]
@@ -93,6 +92,27 @@ if __name__ == '__main__':
             output_file = sys.argv[6]
             factor = sys.argv[7]
             test(test_file, unit_parser_model, sent_parser_model, output_file, unit_feats, sent_feats, flag, float(factor))
+
+
+    elif flag == '-chunk-feat' or flag == '-clause-feat':
+        if flag == '-chunk-feat':
+            flag = '-chunk'
+        else:
+            flag = '-clause'
+        unit_feats = 'a'
+        sent_feats = 'ac'
+        if mode == '-train':    
+            train_file = sys.argv[3]
+            unit_parser_model = sys.argv[4]
+            sent_parser_model = sys.argv[5]
+            train(train_file, unit_parser_model, sent_parser_model, unit_feats, sent_feats, flag)
+        elif mode == '-test':
+            test_file = sys.argv[3]
+            unit_parser_model = sys.argv[4]
+            sent_parser_model = sys.argv[5]
+            output_file = sys.argv[6]
+            test(test_file, unit_parser_model, sent_parser_model, output_file, unit_feats, sent_feats, flag)
+
 
 
 

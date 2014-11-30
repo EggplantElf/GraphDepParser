@@ -81,11 +81,11 @@ def make_features_for_parser(sent, unigrams, h, d, map_func, feats):
     # d12pos = unigrams[ancestor(sent, d+2)][1] if d + 2 < len(sent) else '<NA>'
 
     offset = h - d
-    # flag = '%d~' % offset
-    # if -5 < offset < 5:
-    #     flag = '1s~%d~' % offset
-    # else:
-    #     flag = '5s~%d~' % (offset / 5 * 5)
+    flag = '%d~' % offset
+    if -4 < offset < 4:
+        flag = '1s~%d~' % offset
+    else:
+        flag = '4s~%d~' % (offset / 4 * 4)
 
     # if h > d:
     #     fg = 'h>d~'
@@ -191,8 +191,8 @@ def make_features_for_parser(sent, unigrams, h, d, map_func, feats):
 
 
     if 'b' in feats:
-        features.append(map_func(frog + 'ctag:%s~%s' % (sent[h].ctag, sent[d].ctag)))
-        features.append(map_func(frog + 'ctag~hpos~dpos:%s~%s~%s~%s' % (sent[h].ctag, sent[d].ctag, hpos, dpos)))
+        features.append(map_func(flag + 'ctag:%s~%s' % (sent[h].ctag, sent[d].ctag)))
+        features.append(map_func(flag + 'ctag~hpos~dpos:%s~%s~%s~%s' % (sent[h].ctag, sent[d].ctag, hpos, dpos)))
 
 
 
@@ -215,12 +215,12 @@ def make_features_for_parser(sent, unigrams, h, d, map_func, feats):
         dldpos = unigrams[dld][1] if dld else '<NA>'
         drdpos = unigrams[drd][1] if drd else '<NA>'
 
-        features.append(map_func(flag + unit_flag))
-        features.append(map_func(flag + unit_flag + 'h~d~%s~%s' % (hpos, dpos)))
-        features.append(map_func(flag + unit_flag + 'h~dld~drd~%s~%s~%s' % (hpos, dldpos, drdpos)))
-        features.append(map_func(flag + unit_flag + 'd~hld~hrd~%s~%s~%s' % (dpos, hldpos, hrdpos)))
-        features.append(map_func(flag + unit_flag + 'hld~hrd~dld~drd~%s~%s~%s~%s' % (hldpos, hrdpos, dldpos, drdpos)))
-        features.append(map_func(flag + unit_flag + 'h~d~hld~hrd~dld~drd~%s~%s~%s~%s~%s~%s' % (hpos, dpos, hldpos, hrdpos, dldpos, drdpos)))
+        features.append(map_func(frog + unit_flag))
+        features.append(map_func(frog + unit_flag + 'h~d~%s~%s' % (hpos, dpos)))
+        features.append(map_func(frog + unit_flag + 'h~dld~drd~%s~%s~%s' % (hpos, dldpos, drdpos)))
+        features.append(map_func(frog + unit_flag + 'd~hld~hrd~%s~%s~%s' % (dpos, hldpos, hrdpos)))
+        features.append(map_func(frog + unit_flag + 'hld~hrd~dld~drd~%s~%s~%s~%s' % (hldpos, hrdpos, dldpos, drdpos)))
+        features.append(map_func(frog + unit_flag + 'h~d~hld~hrd~dld~drd~%s~%s~%s~%s~%s~%s' % (hpos, dpos, hldpos, hrdpos, dldpos, drdpos)))
 
     return filter(None, features)
 
