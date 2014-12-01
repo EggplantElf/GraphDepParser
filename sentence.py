@@ -20,7 +20,8 @@ class Token:
         
         # only NP
         if len(entries) > 10:
-            self.ctag = entries[10].split('-')[0]
+            self.ctag = entries[10]
+            # self.ctag = entries[10].split('-')[0]
 
             # unit = entries[10].split('-')
             # if unit != ['O'] and unit[1] == 'NP':

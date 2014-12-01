@@ -6,7 +6,7 @@ def get_chunks(sent, train = False):
     chunks = []
     chunk = []
     for t in range(1, len(sent)):
-        if sent[t].ctag in ['B', 'O']:
+        if sent[t].ctag[0] in ['B', 'O']:
             if chunk:
                 chunks.append(chunk)
             chunk = [t]

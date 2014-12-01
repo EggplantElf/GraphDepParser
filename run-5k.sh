@@ -27,18 +27,18 @@ clause_feat_output='../tmp/wsj_dev.pred.clause-feat.conll06'
 # python unit_parser_main.py -baseline -test $test_file $sent_parser $baseline_output
 
 # baseline + IOB feature
-# python unit_parser_main.py -IOB -train $train_file $IOB_sent_parser
-# python unit_parser_main.py -IOB -test $test_file $IOB_sent_parser $IOB_output
+python unit_parser_main.py -IOB -train $train_file $IOB_sent_parser
+python unit_parser_main.py -IOB -test $test_file $IOB_sent_parser $IOB_output
 
 
 # chunk feat parser
-python unit_parser_main.py -chunk-feat -train $train_file $chunk_parser $chunk_feat_parser 
-python unit_parser_main.py -chunk-feat -test $test_file $chunk_parser $chunk_feat_parser $chunk_feat_output
+# python unit_parser_main.py -chunk-feat -train $train_file $chunk_parser $chunk_feat_parser 
+# python unit_parser_main.py -chunk-feat -test $test_file $chunk_parser $chunk_feat_parser $chunk_feat_output
 
 
 # clause feat parser
-python unit_parser_main.py -clause-feat -train $train_file $clause_parser $clause_feat_parser 
-python unit_parser_main.py -clause-feat -test $test_file $clause_parser $clause_feat_parser $clause_feat_output
+# python unit_parser_main.py -clause-feat -train $train_file $clause_parser $clause_feat_parser 
+# python unit_parser_main.py -clause-feat -test $test_file $clause_parser $clause_feat_parser $clause_feat_output
 
 
 # # parse chunk
