@@ -22,7 +22,7 @@ clause_feat_output='../tmp/wsj_dev.pred.clause-feat.conll06'
 
 
 
-# baseline
+# # baseline
 # python unit_parser_main.py -baseline -train $train_file $sent_parser
 # python unit_parser_main.py -baseline -test $test_file $sent_parser $baseline_output
 
@@ -31,31 +31,40 @@ python unit_parser_main.py -IOB -train $train_file $IOB_sent_parser
 python unit_parser_main.py -IOB -test $test_file $IOB_sent_parser $IOB_output
 
 
-# chunk feat parser
+echo baseline
+perl eval07.pl -q  -g $gold -s $baseline_output
+
+echo IOB
+perl eval07.pl -q  -g $gold -s $IOB_output
+
+# # chunk feat parser
 # python unit_parser_main.py -chunk-feat -train $train_file $chunk_parser $chunk_feat_parser 
 # python unit_parser_main.py -chunk-feat -test $test_file $chunk_parser $chunk_feat_parser $chunk_feat_output
 
 
-# clause feat parser
+# # clause feat parser
 # python unit_parser_main.py -clause-feat -train $train_file $clause_parser $clause_feat_parser 
 # python unit_parser_main.py -clause-feat -test $test_file $clause_parser $clause_feat_parser $clause_feat_output
 
 
 # # parse chunk
-# # python unit_parser_main.py -chunk -train $train_file $chunk_parser $chunk_sent_parser 
-# for f in 1.1 1.2 1.3 1.5 2 3 5
-# do
-#     echo ../tmp/wsj_dev.chunk_output.$f.conll06
-#     python unit_parser_main.py -chunk -test $test_file $chunk_parser $chunk_sent_parser ../tmp/wsj_dev.chunk_output.$f.conll06 $f
-# done
+ 
+for f in 1.1 1.2 1.3 1.5 2 3 5
+do
+    chunk_sent_parser=../tmp/chunk_sent.$f.parser
+    echo ../tmp/wsj_dev.chunk_output.$f.conll06
+    python unit_parser_main.py -chunk -train $train_file $chunk_parser $chunk_sent_parser $f
+    python unit_parser_main.py -chunk -test $test_file $chunk_parser $chunk_sent_parser ../tmp/wsj_dev.chunk_output.$f.conll06 $f
+done
 
-# # parse clause
-# python unit_parser_main.py -clause -train $train_file $clause_parser $clause_sent_parser 
-# for f in 1.1 1.2 1.3 1.5 2 3 5
-# do
-#     echo ../tmp/wsj_dev.clause_output.$f.conll06
-#     python unit_parser_main.py -clause -test $test_file $clause_parser $clause_sent_parser ../tmp/wsj_dev.clause_output.$f.conll06 $f
-# done
+# parse clause
+for f in 1.1 1.2 1.3 1.5 2 3 5
+do
+    clause_sent_parser=../tmp/clause_sent.$f.parser
+    echo ../tmp/wsj_dev.clause_output.$f.conll06
+    python unit_parser_main.py -clause -train $train_file $clause_parser $clause_sent_parser $f
+    python unit_parser_main.py -clause -test $test_file $clause_parser $clause_sent_parser ../tmp/wsj_dev.clause_output.$f.conll06 $f
+done
 
 # results
 echo baseline
@@ -64,22 +73,22 @@ perl eval07.pl -q  -g $gold -s $baseline_output
 echo IOB
 perl eval07.pl -q  -g $gold -s $IOB_output
 
-echo chunk_feat
-perl eval07.pl -q  -g $gold -s $chunk_feat_output
+# echo chunk_feat
+# perl eval07.pl -q  -g $gold -s $chunk_feat_output
 
-echo clause_feat
-perl eval07.pl -q  -g $gold -s $clause_feat_output
+# echo clause_feat
+# perl eval07.pl -q  -g $gold -s $clause_feat_output
 
 
-# for f in 1.1 1.2 1.3 1.5 2 3 5
-# do
-#     echo ../tmp/wsj_dev.chunk_output.$f.conll06
-#     perl eval07.pl -q  -g $gold -s ../tmp/wsj_dev.chunk_output.$f.conll06  
-# done
+for f in 1.1 1.2 1.3 1.5 2 3 5
+do
+    echo ../tmp/wsj_dev.chunk_output.$f.conll06
+    perl eval07.pl -q  -g $gold -s ../tmp/wsj_dev.chunk_output.$f.conll06  
+done
 
-# for f in 1.1 1.2 1.3 1.5 2 3 5
-# do
-#     echo ../tmp/wsj_dev.clause_output.$f.conll06
-#     perl eval07.pl -q  -g $gold -s ../tmp/wsj_dev.clause_output.$f.conll06  
-# done
+for f in 1.1 1.2 1.3 1.5 2 3 5
+do
+    echo ../tmp/wsj_dev.clause_output.$f.conll06
+    perl eval07.pl -q  -g $gold -s ../tmp/wsj_dev.clause_output.$f.conll06  
+done
 

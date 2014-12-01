@@ -56,10 +56,11 @@ class ParserModel:
     def score(self, vector):
         return sum(imap(self.weights.__getitem__, vector))
 
-
-    # should be more generalized, and don't use lambda
-    def predict(self, vectors):
-        return max(vectors, key = lambda h: self.score(vectors[h]))
+    def predict(self, vectors, ch = 0, factor = 1.0):
+        if ch:
+            return max(vectors, key = lambda h: self.score(vectors[h]) * factor if h == ch else self.score(vectors[h]))
+        else:
+            return max(vectors, key = lambda h: self.score(vectors[h]))
 
     def update(self, gold_feat, pred_feat, q = 1):
         for i in gold_feat:
@@ -106,7 +107,7 @@ class LabelerModel:
         q = 0
         for f in self.featmap:
             i = self.featmap[f]
-            if any(math.fabs(self.weights[l][i]) > 0.001 for l in xrange(self.labelmap)):
+            if any(math.fabs(self.weights[l][i]) > 0.01 for l in xrange(self.labelmap)):
                 useful_feat.append(i)
                 new_featmap[f] = q
                 q += 1

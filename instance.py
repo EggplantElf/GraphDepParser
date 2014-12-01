@@ -102,7 +102,7 @@ def get_sent_instances(sent, units, unigrams, sent_map_func, feats):
         for h in xrange(0, len(sent)):
             if h != d:
                 vectors[h] = make_features_for_parser(sent, unigrams, h, d, sent_map_func, feats)
-        sent_instances.append((head, vectors))
+        sent_instances.append((head, sent[d].unithead, vectors))
     return sent_instances
 
 def get_instances(conll_file, unit_parser, sent_parser, unit_feats, sent_feats, unit_type = '-chunk'):

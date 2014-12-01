@@ -135,8 +135,6 @@ def make_features_for_parser(sent, unigrams, h, d, map_func, feats):
         features.append(map_func('$w~' + frog + 'h~d~d+1~d+2:%s~%s~%s~%s' % (hpos, dpos, d11pos, d12pos)))
         features.append(map_func('$x~' + frog + 'h~d+1~d~d-1:%s~%s~%s~%s' % (hpos, d11pos, dpos, d01pos)))
         features.append(map_func('$y~' + frog + 'h-1~h~h+1~d:%s~%s~%s~%s' % (h01pos, hpos, h11pos, dpos)))
-        features.append(map_func('$z~' + frog + 'h.pos~d.form:%s~%s' % (hpos, dform)))
-        features.append(map_func('$A~' + frog + 'h.form~d.pos:%s~%s' % (hpos, dpos)))
 
 
     # # too simple, need change! 
@@ -144,10 +142,10 @@ def make_features_for_parser(sent, unigrams, h, d, map_func, feats):
     # # while finding head for the head of a unit, its children are the second order features
 
 
-
+    # frog or flag?
     if 'b' in feats:
-        features.append(map_func('$ya~'+flag + 'ctag:%s~%s' % (sent[h].ctag, sent[d].ctag)))
-        features.append(map_func('$yb~'+flag + 'ctag~hpos~dpos:%s~%s~%s~%s' % (sent[h].ctag, sent[d].ctag, hpos, dpos)))
+        features.append(map_func('$ya~'+frog + 'ctag:%s~%s' % (sent[h].ctag, sent[d].ctag)))
+        features.append(map_func('$yb~'+frog + 'ctag~hpos~dpos:%s~%s~%s~%s' % (sent[h].ctag, sent[d].ctag, hpos, dpos)))
 
 
 

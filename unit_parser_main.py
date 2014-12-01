@@ -6,14 +6,14 @@ from labeler import *
 
 
 # what should the sent_instances for training be? just all arcs as in the usual way or reduced arcs which may be unsound
-def train(train_file, unit_parser_model, sent_parser_model, unit_feats, sent_feats, unit_type = '-chunk'): 
+def train(train_file, unit_parser_model, sent_parser_model, unit_feats, sent_feats, unit_type = '-chunk', factor = 1.0): 
     unit_parser = UnitParser() if unit_parser_model else None
     sent_parser = SentParser() if sent_parser_model else None 
     unit_instances, sent_instances = get_instances(train_file, unit_parser, sent_parser, unit_feats, sent_feats, unit_type)
     if unit_parser:
         unit_parser.train(unit_instances, unit_parser_model)
     if sent_parser:
-        sent_parser.train(sent_instances, sent_parser_model)
+        sent_parser.train(sent_instances, sent_parser_model, factor=factor)
 
 def test(conll_file, unit_parser_model, sent_parser_model, output_file, unit_feats, sent_feats, unit_type = '-chunk', factor = 1.0):
     unit_parser = UnitParser(unit_parser_model) if unit_parser_model else None
@@ -84,7 +84,8 @@ if __name__ == '__main__':
             train_file = sys.argv[3]
             unit_parser_model = sys.argv[4]
             sent_parser_model = sys.argv[5]
-            train(train_file, unit_parser_model, sent_parser_model, unit_feats, sent_feats, flag)
+            factor = sys.argv[6]
+            train(train_file, unit_parser_model, sent_parser_model, unit_feats, sent_feats, flag, float(factor))
         elif mode == '-test':
             test_file = sys.argv[3]
             unit_parser_model = sys.argv[4]
