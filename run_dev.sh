@@ -1,7 +1,7 @@
 
-gold='../data/english/test/wsj_test.conll06'
+gold='../data/english/dev/wsj_dev.conll06'
 train_file='../tmp/wsj_train.fold.cx'
-test_file='../tmp/wsj_test.cx'
+test_file='../tmp/wsj_dev.cx'
 
 sent_parser='../tmp/sent.parser'
 IOB_sent_parser='../tmp/IOB_sent.parser'
@@ -13,12 +13,12 @@ chunk_feat_parser='../tmp/chunk_feat.parser'
 clause_feat_parser='../tmp/clause_feat.parser'
 
 
-baseline_output='../tmp/wsj_test.pred.baseline.conll06'
-IOB_output='../tmp/wsj_test.pred.IOB.conll06'
-chunk_output='../tmp/wsj_test.pred.chunk.conll06'
-clause_output='../tmp/wsj_test.pred.clause.conll06'
-chunk_feat_output='../tmp/wsj_test.pred.chunk-feat.conll06'
-clause_feat_output='../tmp/wsj_test.pred.clause-feat.conll06'
+baseline_output='../tmp/wsj_dev.pred.baseline.conll06'
+IOB_output='../tmp/wsj_dev.pred.IOB.conll06'
+chunk_output='../tmp/wsj_dev.pred.chunk.conll06'
+clause_output='../tmp/wsj_dev.pred.clause.conll06'
+chunk_feat_output='../tmp/wsj_dev.pred.chunk-feat.conll06'
+clause_feat_output='../tmp/wsj_dev.pred.clause-feat.conll06'
 
 
 
@@ -46,16 +46,16 @@ python unit_parser_main.py -clause-feat -test $test_file $clause_parser $clause_
 python unit_parser_main.py -chunk -train $train_file $chunk_parser $chunk_sent_parser 
 for f in 1.1 1.2 1.3 1.5 2 3 5
 do
-    echo ../tmp/wsj_test.chunk_output.$f.conll06
-    python unit_parser_main.py -chunk -test $test_file $chunk_parser $chunk_sent_parser ../tmp/wsj_test.chunk_output.$f.conll06 $f
+    echo ../tmp/wsj_dev.chunk_output.$f.conll06
+    python unit_parser_main.py -chunk -test $test_file $chunk_parser $chunk_sent_parser ../tmp/wsj_dev.chunk_output.$f.conll06 $f
 done
 
 # parse clause
 python unit_parser_main.py -clause -train $train_file $clause_parser $clause_sent_parser 
 for f in 1.1 1.2 1.3 1.5 2 3 5
 do
-    echo ../tmp/wsj_test.clause_output.$f.conll06
-    python unit_parser_main.py -clause -test $test_file $clause_parser $clause_sent_parser ../tmp/wsj_test.clause_output.$f.conll06 $f
+    echo ../tmp/wsj_dev.clause_output.$f.conll06
+    python unit_parser_main.py -clause -test $test_file $clause_parser $clause_sent_parser ../tmp/wsj_dev.clause_output.$f.conll06 $f
 done
 
 # results
@@ -74,13 +74,13 @@ perl eval07.pl -q -p -g $gold -s $clause_feat_output
 
 for f in 1.1 1.2 1.3 1.5 2 3 5
 do
-    echo ../tmp/wsj_test.chunk_output.$f.conll06
-    perl eval07.pl -q -p -g $gold -s ../tmp/wsj_test.chunk_output.$f.conll06  
+    echo ../tmp/wsj_dev.chunk_output.$f.conll06
+    perl eval07.pl -q -p -g $gold -s ../tmp/wsj_dev.chunk_output.$f.conll06  
 done
 
 for f in 1.1 1.2 1.3 1.5 2 3 5
 do
-    echo ../tmp/wsj_test.clause_output.$f.conll06
-    perl eval07.pl -q -p -g $gold -s ../tmp/wsj_test.clause_output.$f.conll06  
+    echo ../tmp/wsj_dev.clause_output.$f.conll06
+    perl eval07.pl -q -p -g $gold -s ../tmp/wsj_dev.clause_output.$f.conll06  
 done
 
