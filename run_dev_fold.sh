@@ -1,7 +1,7 @@
 
 gold='../data/english/dev/wsj_dev.conll06'
 train_file='../tmp/wsj_train.fold.cx'
-test_file='../tmp/wsj_dev.fold.cx'
+test_file='../tmp/wsj_dev.cx'
 
 sent_parser='../tmp/sent.fold.parser'
 IOB_sent_parser='../tmp/IOB_sent.fold.parser'
