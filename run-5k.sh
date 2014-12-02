@@ -1,7 +1,7 @@
 
-gold='../data/english/dev/wsj_dev.conll06'
+gold='../data/english/test/wsj_test.conll06'
 train_file='../tmp/wsj_train.fold.cx'
-test_file='../tmp/wsj_dev.cx'
+test_file='../tmp/wsj_test.cx'
 
 sent_parser='../tmp/sent.parser'
 IOB_sent_parser='../tmp/IOB_sent.parser'
@@ -13,12 +13,12 @@ chunk_feat_parser='../tmp/chunk_feat.parser'
 clause_feat_parser='../tmp/clause_feat.parser'
 
 
-baseline_output='../tmp/wsj_dev.pred.baseline.conll06'
-IOB_output='../tmp/wsj_dev.pred.IOB.conll06'
-chunk_output='../tmp/wsj_dev.pred.chunk.conll06'
-clause_output='../tmp/wsj_dev.pred.clause.conll06'
-chunk_feat_output='../tmp/wsj_dev.pred.chunk-feat.conll06'
-clause_feat_output='../tmp/wsj_dev.pred.clause-feat.conll06'
+baseline_output='../tmp/wsj_test.pred.baseline.conll06'
+IOB_output='../tmp/wsj_test.pred.IOB.conll06'
+chunk_output='../tmp/wsj_test.pred.chunk.conll06'
+clause_output='../tmp/wsj_test.pred.clause.conll06'
+chunk_feat_output='../tmp/wsj_test.pred.chunk-feat.conll06'
+clause_feat_output='../tmp/wsj_test.pred.clause-feat.conll06'
 
 
 
@@ -27,8 +27,8 @@ clause_feat_output='../tmp/wsj_dev.pred.clause-feat.conll06'
 # python unit_parser_main.py -baseline -test $test_file $sent_parser $baseline_output
 
 # baseline + IOB feature
-python unit_parser_main.py -IOB -train $train_file $IOB_sent_parser
-python unit_parser_main.py -IOB -test $test_file $IOB_sent_parser $IOB_output
+# python unit_parser_main.py -IOB -train $train_file $IOB_sent_parser
+# python unit_parser_main.py -IOB -test $test_file $IOB_sent_parser $IOB_output
 
 
 echo baseline
