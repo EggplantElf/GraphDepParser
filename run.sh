@@ -1,6 +1,6 @@
 
 gold='../data/english/dev/wsj_dev.conll06'
-train_file='../tmp/wsj_train.cx'
+train_file='../tmp/wsj_train.fold.cx'
 test_file='../tmp/wsj_dev.cx'
 
 sent_parser='../tmp/sent.parser'
@@ -59,27 +59,27 @@ done
 
 # results
 echo baseline
-perl eval07.pl -q  -g $gold -s $baseline_output
+perl eval07.pl -q -p -g $gold -s $baseline_output
 
 echo IOB
-perl eval07.pl -q  -g $gold -s $IOB_output
+perl eval07.pl -q -p -g $gold -s $IOB_output
 
 echo chunk_feat
-perl eval07.pl -q  -g $gold -s $chunk_feat_output
+perl eval07.pl -q -p -g $gold -s $chunk_feat_output
 
 echo clause_feat
-perl eval07.pl -q  -g $gold -s $clause_feat_output
+perl eval07.pl -q -p -g $gold -s $clause_feat_output
 
 
 for f in 1.1 1.2 1.3 1.5 2 3 5
 do
     echo ../tmp/wsj_dev.chunk_output.$f.conll06
-    perl eval07.pl -q  -g $gold -s ../tmp/wsj_dev.chunk_output.$f.conll06  
+    perl eval07.pl -q -p -g $gold -s ../tmp/wsj_dev.chunk_output.$f.conll06  
 done
 
 for f in 1.1 1.2 1.3 1.5 2 3 5
 do
     echo ../tmp/wsj_dev.clause_output.$f.conll06
-    perl eval07.pl -q  -g $gold -s ../tmp/wsj_dev.clause_output.$f.conll06  
+    perl eval07.pl -q -p -g $gold -s ../tmp/wsj_dev.clause_output.$f.conll06  
 done
 

@@ -1,6 +1,6 @@
 
 gold='../data/english/dev/wsj_dev.conll06'
-train_file='../tmp/wsj_train.cx'
+train_file='../tmp/wsj_train.fold.cx'
 test_file='../tmp/wsj_dev.cx'
 
 sent_parser='../tmp/sent.parser'
@@ -24,8 +24,8 @@ clause_output='../tmp/wsj_dev.pred.clause.conll06'
 
 python unit_parser_main.py -baseline -train $train_file $sent_parser
 python unit_parser_main.py -IOB -train $train_file $IOB_sent_parser
-python unit_parser_main.py -chunk -train $train_file $chunk_parser $chunk_sent_parser 2
-python unit_parser_main.py -clause -train $train_file $clause_parser $clause_sent_parser 2
+python unit_parser_main.py -chunk -train $train_file $chunk_parser $chunk_sent_parser 1.5
+python unit_parser_main.py -clause -train $train_file $clause_parser $clause_sent_parser 1.5
 
 
 
@@ -46,10 +46,10 @@ do
 
 
     # parse chunk
-    python unit_parser_main.py -chunk -test $test_file $chunk_parser $chunk_sent_parser $chunk_output 2
+    python unit_parser_main.py -chunk -test $test_file $chunk_parser $chunk_sent_parser $chunk_output 1.5
 
     # parse clause
-    python unit_parser_main.py -clause -test $test_file $clause_parser $clause_sent_parser $clause_output 2
+    python unit_parser_main.py -clause -test $test_file $clause_parser $clause_sent_parser $clause_output 1.5
 
 done
 
@@ -67,16 +67,16 @@ do
     echo $g
 
     echo baseline
-    perl eval07.pl -q  -g $gold -s $baseline_output
+    perl eval07.pl -q -p -g $gold -s $baseline_output
 
     echo IOB
-    perl eval07.pl -q  -g $gold -s $IOB_output
+    perl eval07.pl -q -p -g $gold -s $IOB_output
 
     echo chunk_weight
-    perl eval07.pl -q  -g $gold -s $chunk_output
+    perl eval07.pl -q -p -g $gold -s $chunk_output
 
     echo clause_weight
-    perl eval07.pl -q  -g $gold -s $clause_output
+    perl eval07.pl -q -p -g $gold -s $clause_output
 
 done
 

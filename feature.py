@@ -144,8 +144,24 @@ def make_features_for_parser(sent, unigrams, h, d, map_func, feats):
 
     # frog or flag?
     if 'b' in feats:
-        features.append(map_func('$ya~'+frog + 'ctag:%s~%s' % (sent[h].ctag, sent[d].ctag)))
-        features.append(map_func('$yb~'+frog + 'ctag~hpos~dpos:%s~%s~%s~%s' % (sent[h].ctag, sent[d].ctag, hpos, dpos)))
+        hc = sent[h].ctag
+        dc = sent[d].ctag
+        # h01c = sent[h-1].ctag if h >= 1 else '<NA>'
+        # h11c = sent[h+1].ctag if h + 1 < len(sent) else '<NA>'
+        # d01c = sent[d-1].ctag if d >= 1 else '<NA>'
+        # d11c = sent[d+1].ctag if d + 1 < len(sent) else '<NA>'
+ 
+
+
+        features.append(map_func('$ya~'+flag + '(%s~%s~)' % (hc, dc)))
+        features.append(map_func('$yb~'+flag + '(%s~%s)~hpos~dpos:%s~%s' % (hc, dc, hpos, dpos)))
+
+
+        # features.append(map_func('$yr~' + frog + 'ctag~h~h+1~d~d-1:%s~%s~%s~%s~%s~%s~%s~%s' % (hc, h11c, dc, d01c, hpos, h11pos, dpos, d01pos)))
+        # features.append(map_func('$ys~' + frog + 'ctag~h~h-1~d~d+1:%s~%s~%s~%s~%s~%s~%s~%s' % (hc, h01c, dc, d11c, hpos, h01pos, dpos, d11pos)))
+        # features.append(map_func('$yt~' + frog + 'ctag~h~h+1~d~d+1:%s~%s~%s~%s~%s~%s~%s~%s' % (hc, h11c, dc, d11c, hpos, h11pos, dpos, d11pos)))
+        # features.append(map_func('$yu~' + frog + 'ctag~h~h-1~d~d-1:%s~%s~%s~%s~%s~%s~%s~%s' % (hc, h01c, dc, d01c, hpos, h01pos, dpos, d01pos)))
+
 
 
 
