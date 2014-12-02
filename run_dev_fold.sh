@@ -43,7 +43,7 @@ python unit_parser_main.py -IOB -test $test_file $IOB_sent_parser $IOB_output
 
 
 # parse chunk
-python unit_parser_main.py -chunk -train $train_file $chunk_parser $chunk_sent_parser 
+python unit_parser_main.py -chunk -train $train_file $chunk_parser $chunk_sent_parser 1
 for f in 1.1 1.2 1.3 1.5 2 3 5
 do
     echo ../tmp/wsj_dev.chunk.fold.$f.conll06
@@ -51,7 +51,7 @@ do
 done
 
 # parse clause
-python unit_parser_main.py -clause -train $train_file $clause_parser $clause_sent_parser 
+python unit_parser_main.py -clause -train $train_file $clause_parser $clause_sent_parser 1
 for f in 1.1 1.2 1.3 1.5 2 3 5
 do
     echo ../tmp/wsj_dev.clause.fold.$f.conll06
