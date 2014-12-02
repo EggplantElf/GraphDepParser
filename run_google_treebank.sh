@@ -24,8 +24,8 @@ clause_output='../tmp/wsj_dev.pred.clause.conll06'
 
 python unit_parser_main.py -baseline -train $train_file $sent_parser
 python unit_parser_main.py -IOB -train $train_file $IOB_sent_parser
-python unit_parser_main.py -chunk -train $train_file $chunk_parser $chunk_sent_parser 1.5
-python unit_parser_main.py -clause -train $train_file $clause_parser $clause_sent_parser 1.5
+python unit_parser_main.py -chunk -train $train_file $chunk_parser $chunk_sent_parser 1
+python unit_parser_main.py -clause -train $train_file $clause_parser $clause_sent_parser 1
 
 
 
@@ -63,7 +63,7 @@ do
     IOB_output=../tmp/$g.IOB.conll06
     chunk_output=../tmp/$g.chunk.conll06
     clause_output=../tmp/$g.clause.conll06
-    gold=../data/clear_dependencies/$g.conll06
+    gold=../tmp/$g.conll06
     echo $g
 
     echo baseline
