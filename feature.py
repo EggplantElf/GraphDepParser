@@ -153,8 +153,8 @@ def make_features_for_parser(sent, unigrams, h, d, map_func, feats):
  
 
 
-        features.append(map_func('$ya~'+flag + '(%s~%s~)' % (hc, dc)))
-        features.append(map_func('$yb~'+flag + '(%s~%s)~hpos~dpos:%s~%s' % (hc, dc, hpos, dpos)))
+        features.append(map_func('$ya~'+frog + '(%s~%s~)' % (hc, dc)))
+        features.append(map_func('$yb~'+frog + '(%s~%s)~hpos~dpos:%s~%s' % (hc, dc, hpos, dpos)))
 
 
         # features.append(map_func('$yr~' + frog + 'ctag~h~h+1~d~d-1:%s~%s~%s~%s~%s~%s~%s~%s' % (hc, h11c, dc, d01c, hpos, h11pos, dpos, d01pos)))
