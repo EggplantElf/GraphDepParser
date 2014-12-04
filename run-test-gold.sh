@@ -30,11 +30,11 @@ python unit_parser_main.py -IOB -test $test_file $IOB_sent_parser $IOB_output
 
 # parse chunk
 python unit_parser_main.py -chunk -train $train_file $chunk_parser $chunk_sent_parser 
-python unit_parser_main.py -chunk -test $test_file $chunk_parser $chunk_sent_parser ../tmp/wsj_test.chunk_output.$f.conll06 1.3
+python unit_parser_main.py -chunk -test $test_file $chunk_parser $chunk_sent_parser ../tmp/wsj_test.chunk_output.1.3.conll06 1.3
 
 # parse clause
 python unit_parser_main.py -clause -train $train_file $clause_parser $clause_sent_parser 
-python unit_parser_main.py -clause -test $test_file $clause_parser $clause_sent_parser ../tmp/wsj_test.clause_output.$f.conll06 1.2
+python unit_parser_main.py -clause -test $test_file $clause_parser $clause_sent_parser ../tmp/wsj_test.clause_output.1.2.conll06 1.2
 
 
 # results
