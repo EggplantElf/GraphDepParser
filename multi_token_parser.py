@@ -36,7 +36,7 @@ class SentParser:
             total = 0      
             for (gold, ch, head_vectors) in iter(instances):
                 q += 1
-                pred = self.model.predict(head_vectors, ch, factor)
+                pred = self.model.predict(head_vectors)
                 if gold != pred:
                     self.model.update(head_vectors[gold], head_vectors[pred], q)
                 else:
@@ -74,34 +74,30 @@ class SentParser:
         return sent
 
 
-    def train_CLE(self, instances, model_file, epochs = 10):
-        print 'start training ...'
-        self.model.make_weights()
-        q = 0
-        for epoch in xrange(epochs):
-            correct = 0
-            total = 0      
-            for (gold_arcs, vectors) in iter(instances):
-                q += 1
-                scores = {}
-                for a in vectors:
-                    scores[a] = (self.model.score(vectors[a]), [a])
-                pred_arcs = MST(scores).edges()
-                gold_heads = dict([(d, h) for (h, d) in gold_arcs])
-                pred_heads = dict([(d, h) for (h, d) in pred_arcs])
-                for d in gold_heads:
-                    if gold_heads[d] != pred_heads[d]:
-                        self.model.update(vectors[(gold_heads[d], d)], vectors[(pred_heads[d], d)], q)
-                    else:
-                        correct += 1
-                    total += 1
-            print '\nepoch %d done, %6.2f%% correct' % (epoch,100.0*correct/total)
-        self.model.average(q)
-        self.model.save(model_file)
-
-
-
-
+    # def train_CLE(self, instances, model_file, epochs = 10):
+    #     print 'start training ...'
+    #     self.model.make_weights()
+    #     q = 0
+    #     for epoch in xrange(epochs):
+    #         correct = 0
+    #         total = 0      
+    #         for (gold_arcs, vectors) in iter(instances):
+    #             q += 1
+    #             scores = {}
+    #             for a in vectors:
+    #                 scores[a] = (self.model.score(vectors[a]), [a])
+    #             pred_arcs = MST(scores).edges()
+    #             gold_heads = dict([(d, h) for (h, d) in gold_arcs])
+    #             pred_heads = dict([(d, h) for (h, d) in pred_arcs])
+    #             for d in gold_heads:
+    #                 if gold_heads[d] != pred_heads[d]:
+    #                     self.model.update(vectors[(gold_heads[d], d)], vectors[(pred_heads[d], d)], q)
+    #                 else:
+    #                     correct += 1
+    #                 total += 1
+    #         print '\nepoch %d done, %6.2f%% correct' % (epoch,100.0*correct/total)
+    #     self.model.average(q)
+    #     self.model.save(model_file)
 
 
 
@@ -122,7 +118,7 @@ class UnitParser:
                     scores[(h,d)] = (model.score(vector), [(h,d)])
         return scores
 
-    def train(self, instances, model_file, epochs = 5):
+    def train(self, instances, model_file, epochs = 10):
         self.model.make_weights()
         print 'start training ...'
         q = 0

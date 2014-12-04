@@ -1,6 +1,6 @@
 
 gold='../data/english/test/wsj_test.conll06'
-train_file='../tmp/wsj_train.fold.cx'
+train_file='../tmp/wsj_train.gold.cx'
 test_file='../tmp/wsj_test.cx'
 
 sent_parser='../tmp/sent.parser'

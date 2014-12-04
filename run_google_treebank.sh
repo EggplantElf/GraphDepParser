@@ -1,6 +1,6 @@
 
 gold='../data/english/dev/wsj_dev.conll06'
-train_file='../tmp/wsj_train.fold.cx'
+train_file='../tmp/wsj_train.gold.cx'
 test_file='../tmp/wsj_dev.cx'
 
 sent_parser='../tmp/sent.parser'
@@ -9,15 +9,6 @@ chunk_parser='../tmp/chunk.parser'
 clause_parser='../tmp/clause.parser'
 chunk_sent_parser='../tmp/chunk_sent.parser'
 clause_sent_parser='../tmp/clause_sent.parser'
-
-
-
-baseline_output='../tmp/wsj_dev.pred.baseline.conll06'
-IOB_output='../tmp/wsj_dev.pred.IOB.conll06'
-chunk_output='../tmp/wsj_dev.pred.chunk.conll06'
-clause_output='../tmp/wsj_dev.pred.clause.conll06'
-
-
 
 
 # train
@@ -46,10 +37,10 @@ do
 
 
     # parse chunk
-    python unit_parser_main.py -chunk -test $test_file $chunk_parser $chunk_sent_parser $chunk_output 1.5
+    python unit_parser_main.py -chunk -test $test_file $chunk_parser $chunk_sent_parser $chunk_output 1.3
 
     # parse clause
-    python unit_parser_main.py -clause -test $test_file $clause_parser $clause_sent_parser $clause_output 1.5
+    python unit_parser_main.py -clause -test $test_file $clause_parser $clause_sent_parser $clause_output 1.2
 
 done
 

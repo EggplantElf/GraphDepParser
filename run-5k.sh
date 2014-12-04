@@ -1,7 +1,7 @@
 
-gold='../data/english/test/wsj_test.conll06'
-train_file='../tmp/wsj_train.fold.cx'
-test_file='../tmp/wsj_test.cx'
+gold='../data/english/dev/wsj_dev.conll06'
+train_file='../tmp/wsj_train.gold.cx'
+test_file='../tmp/dev.cx'
 
 sent_parser='../tmp/sent.parser'
 IOB_sent_parser='../tmp/IOB_sent.parser'
@@ -13,29 +13,46 @@ chunk_feat_parser='../tmp/chunk_feat.parser'
 clause_feat_parser='../tmp/clause_feat.parser'
 
 
-baseline_output='../tmp/wsj_test.pred.baseline.conll06'
-IOB_output='../tmp/wsj_test.pred.IOB.conll06'
-chunk_output='../tmp/wsj_test.pred.chunk.conll06'
-clause_output='../tmp/wsj_test.pred.clause.conll06'
-chunk_feat_output='../tmp/wsj_test.pred.chunk-feat.conll06'
-clause_feat_output='../tmp/wsj_test.pred.clause-feat.conll06'
+baseline_output='../tmp/wsj_dev.pred.baseline.conll06'
+IOB_output='../tmp/wsj_dev.pred.IOB.conll06'
+chunk_output='../tmp/wsj_dev.pred.chunk.conll06'
+clause_output='../tmp/wsj_dev.pred.clause.conll06'
+chunk_feat_output='../tmp/wsj_dev.pred.chunk-feat.conll06'
+clause_feat_output='../tmp/wsj_dev.pred.clause-feat.conll06'
 
 
 
 # # baseline
-# python unit_parser_main.py -baseline -train $train_file $sent_parser
+python unit_parser_main.py -baseline -train $train_file $sent_parser
 python unit_parser_main.py -baseline -test $test_file $sent_parser $baseline_output
 
 # baseline + IOB feature
 # python unit_parser_main.py -IOB -train $train_file $IOB_sent_parser
-python unit_parser_main.py -IOB -test $test_file $IOB_sent_parser $IOB_output
+# python unit_parser_main.py -IOB -test $test_file $IOB_sent_parser $IOB_output
+
+# # chunk
+# python unit_parser_main.py -chunk -train $train_file $chunk_parser $chunk_sent_parser
+# python unit_parser_main.py -chunk -test $test_file $chunk_parser $chunk_sent_parser $chunk_output 1.3
+
+# clause
+# python unit_parser_main.py -clause -train $train_file $clause_parser $clause_sent_parser
+# python unit_parser_main.py -clause -test $test_file $clause_parser $clause_sent_parser $clause_output 1.2
 
 
 echo baseline
-perl eval07.pl -q -p -g $gold -s $baseline_output
+perl eval07.pl -q -g $gold -s $baseline_output
 
 echo IOB
-perl eval07.pl -q -p -g $gold -s $IOB_output
+perl eval07.pl -q -g $gold -s $IOB_output
+
+echo chunk
+perl eval07.pl -q -g $gold -s $chunk_output
+
+echo clause
+perl eval07.pl -q -g $gold -s $clause_output
+
+
+
 
 # # chunk feat parser
 # python unit_parser_main.py -chunk-feat -train $train_file $chunk_parser $chunk_feat_parser 
@@ -53,9 +70,9 @@ perl eval07.pl -q -p -g $gold -s $IOB_output
 # do
 #     chunk_sent_parser=../tmp/chunk_sent.$f.parser
 #     echo ../tmp/wsj_dev.chunk_output.$f.conll06
-#     python unit_parser_main.py -chunk -train $train_file $chunk_parser $chunk_sent_parser $f
-#     python unit_parser_main.py -chunk -test $test_file $chunk_parser $chunk_sent_parser ../tmp/wsj_dev.chunk_output.$f.conll06 $f
-# done
+# python unit_parser_main.py -chunk -train $train_file $chunk_parser $chunk_sent_parser
+# python unit_parser_main.py -chunk -test $test_file $chunk_parser $chunk_sent_parser $chunk_output 1.3
+# # done
 
 # # parse clause
 # for f in 1.1 1.2 1.3 1.5 2 3 5
@@ -91,4 +108,6 @@ perl eval07.pl -q -p -g $gold -s $IOB_output
 #     echo ../tmp/wsj_dev.clause_output.$f.conll06
 #     perl eval07.pl -q -p -g $gold -s ../tmp/wsj_dev.clause_output.$f.conll06  
 # done
+
+echo 'Test finished!' | terminal-notifier -sound default
 

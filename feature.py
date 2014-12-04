@@ -43,11 +43,7 @@ def deps(sent, h):
 
 
 def make_unigram_features(sent, unit = []):
-    # features are triples like ('took', 'VB', 'past')
-    if unit:
-        return [(sent[i].form, sent[i].pos) for i in unit + [0]]
-    else:
-        return [(sent[i].form, sent[i].pos) for i in xrange(len(sent))]
+    return [(sent[i].form, sent[i].pos) for i in xrange(len(sent))]
 
 
 
@@ -71,7 +67,7 @@ def make_features_for_parser(sent, unigrams, h, d, map_func, feats):
 
 
     offset = h - d
-    flag = '%d~' % offset
+    # flag = '%d~' % offset
     if -4 < offset < 4:
         flag = '1s~%d~' % offset
     else:
@@ -89,6 +85,9 @@ def make_features_for_parser(sent, unigrams, h, d, map_func, feats):
         else:
             frog = '-1s~'
 
+    # if 'd' in feats:
+    #     same = 'same~' if sent[h].cnum == sent[d].cnum else 'diff~'
+    #     frog += same
 
     if 'a' in feats:
         # a) 
@@ -121,8 +120,15 @@ def make_features_for_parser(sent, unigrams, h, d, map_func, feats):
         for b in range(min(h, d) + 1, max(h, d)):
             bpos = unigrams[b][1]
             features.append(map_func('$p~' + frog + 'h.pos~b.pos~d.pos:%s~%s~%s' % (hpos, bpos, dpos)))
+       
+        # for b in range(min(h, d) + 1, max(h, d) - 1):
+        #     bbpos = '%s~%s' % (unigrams[b][1], unigrams[b+1][1])
+        #     features.append(map_func('$p~' + frog + 'h.pos~bb.pos~d.pos:%s~%s~%s' % (hpos, bbpos, dpos)))
+
 
         features.append(map_func('$q~' + frog + 'all-b.pos:%s' % '~'.join(map(lambda x: unigrams[x][1], range(min(h, d), max(h, d) + 1)))))
+            
+
 
 
         features.append(map_func('$r~' + frog + 'h~h+1~d~d-1:%s~%s~%s~%s' % (hpos, h11pos, dpos, d01pos)))
@@ -144,23 +150,50 @@ def make_features_for_parser(sent, unigrams, h, d, map_func, feats):
 
     # frog or flag?
     if 'b' in feats:
-        hc = sent[h].ctag
-        dc = sent[d].ctag
+        hc = sent[h].ctag.split('-')[-1]
+        dc = sent[d].ctag.split('-')[-1]
+        # hboc = sent[h].boc
+        # dboc = sent[d].boc
+        # heoc = sent[h].eoc
+        # deoc = sent[d].eoc
+        eoc = 'eoc(%s~%s~%d~%d)~' % (hc, dc, sent[h].eoc, sent[d].eoc)
+        boc = 'boc(%s~%s~%d~%d)~' % (hc, dc, sent[h].boc, sent[d].boc)
+        same = 'same~' if sent[h].cnum == sent[d].cnum else 'diff~'
+        # ctype = '(%s~%s)~' % (sent[h].ctag, sent[d].ctag)
+        # fred = '(%s~%s~%d~%d~%d~%d)~' % (hc, dc, hboc, heoc, dboc, deoc)
         # h01c = sent[h-1].ctag if h >= 1 else '<NA>'
         # h11c = sent[h+1].ctag if h + 1 < len(sent) else '<NA>'
         # d01c = sent[d-1].ctag if d >= 1 else '<NA>'
         # d11c = sent[d+1].ctag if d + 1 < len(sent) else '<NA>'
- 
 
+        # 1
+        # features.append(map_func('$ya~'+ frog + fred))
+        # features.append(map_func('$yb~'+ frog + fred + 'hpos~dpos:%s~%s' % (hpos, dpos)))
 
-        features.append(map_func('$ya~'+frog + '(%s~%s~)' % (hc, dc)))
-        features.append(map_func('$yb~'+frog + '(%s~%s)~hpos~dpos:%s~%s' % (hc, dc, hpos, dpos)))
+        # 2
+        # features.append(map_func('$yc~'+ frog + same + fred))
+        # features.append(map_func('$yd~'+ frog + same + fred + 'hpos~dpos:%s~%s' % (hpos, dpos)))
+        # # # 3
+        # features.append(map_func('$ye~'+ frog + ctype))
+        # features.append(map_func('$yf~'+ frog + ctype + 'hpos~dpos:%s~%s' % (hpos, dpos)))
+        # # # 4
+        # features.append(map_func('$yg~'+ frog + same+ ctype))
+        # features.append(map_func('$yh~'+ frog + same+ ctype + 'hpos~dpos:%s~%s' % (hpos, dpos)))
+        # 5
+        # features.append(map_func('$yi~'+ frog + eoc))
+        # features.append(map_func('$yj~'+ frog + eoc + 'hpos~dpos:%s~%s' % (hpos, dpos)))
+
+        # # 6
+        features.append(map_func('$yi~'+ frog + same + eoc))
+        features.append(map_func('$yj~'+ frog + same + eoc + 'hpos~dpos:%s~%s' % (hpos, dpos)))
+
 
 
         # features.append(map_func('$yr~' + frog + 'ctag~h~h+1~d~d-1:%s~%s~%s~%s~%s~%s~%s~%s' % (hc, h11c, dc, d01c, hpos, h11pos, dpos, d01pos)))
         # features.append(map_func('$ys~' + frog + 'ctag~h~h-1~d~d+1:%s~%s~%s~%s~%s~%s~%s~%s' % (hc, h01c, dc, d11c, hpos, h01pos, dpos, d11pos)))
         # features.append(map_func('$yt~' + frog + 'ctag~h~h+1~d~d+1:%s~%s~%s~%s~%s~%s~%s~%s' % (hc, h11c, dc, d11c, hpos, h11pos, dpos, d11pos)))
         # features.append(map_func('$yu~' + frog + 'ctag~h~h-1~d~d-1:%s~%s~%s~%s~%s~%s~%s~%s' % (hc, h01c, dc, d01c, hpos, h01pos, dpos, d01pos)))
+
 
 
 
@@ -203,12 +236,6 @@ def make_features_for_parser(sent, unigrams, h, d, map_func, feats):
         # # features.append(map_func('$xd~'+frog + unit_flag + 'd~hld~hrd~%s~%s~%s' % (dpos, hldpos, hrdpos)))
         # # features.append(map_func('$xe~'+frog + unit_flag + 'hld~hrd~dld~drd~%s~%s~%s~%s' % (hldpos, hrdpos, dldpos, drdpos)))
         # # features.append(map_func('$xf~'+frog + unit_flag + 'h~d~hld~hrd~dld~drd~%s~%s~%s~%s~%s~%s' % (hpos, dpos, hldpos, hrdpos, dldpos, drdpos)))
-
-
-
-
-
-
 
     return filter(None, features)
 

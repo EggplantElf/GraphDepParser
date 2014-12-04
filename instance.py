@@ -21,10 +21,9 @@ def get_chunks(sent, train = False):
             if check(sent, chunk):
                 good_chunks.append(chunk)
             else:
-                # print 'bad chunk!'
-                # print chunk
                 good_chunks.extend([[t] for t in chunk])
         chunks = good_chunks
+
 
     # only return chunks with more than one token
     return filter(lambda x: len(x) > 1, chunks)

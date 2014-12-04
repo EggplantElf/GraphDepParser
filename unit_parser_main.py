@@ -79,13 +79,12 @@ if __name__ == '__main__':
 
     elif flag == '-chunk' or flag == '-clause':
         unit_feats = 'a'
-        sent_feats = 'a'
+        sent_feats = 'ad'
         if mode == '-train':    
             train_file = sys.argv[3]
             unit_parser_model = sys.argv[4]
             sent_parser_model = sys.argv[5]
-            factor = sys.argv[6]
-            train(train_file, unit_parser_model, sent_parser_model, unit_feats, sent_feats, flag, float(factor))
+            train(train_file, unit_parser_model, sent_parser_model, unit_feats, sent_feats, flag)
         elif mode == '-test':
             test_file = sys.argv[3]
             unit_parser_model = sys.argv[4]
