@@ -44,10 +44,10 @@ perl eval07.pl -q -p -g $gold -s $baseline_output
 echo IOB
 perl eval07.pl -q -p -g $gold -s $IOB_output
 
-echo ../tmp/wsj_test.chunk_output.$f.conll06
-perl eval07.pl -q -p -g $gold -s ../tmp/wsj_test.chunk_output.$f.conll06  
+echo ../tmp/wsj_test.chunk_output.1.3.conll06
+perl eval07.pl -q -p -g $gold -s ../tmp/wsj_test.chunk_output.1.3.conll06  
 
-echo ../tmp/wsj_test.clause_output.$f.conll06
-perl eval07.pl -q -p -g $gold -s ../tmp/wsj_test.clause_output.$f.conll06  
+echo ../tmp/wsj_test.clause_output.1.2.conll06
+perl eval07.pl -q -p -g $gold -s ../tmp/wsj_test.clause_output.1.2.conll06  
 
 
