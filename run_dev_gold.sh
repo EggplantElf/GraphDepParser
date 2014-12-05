@@ -20,13 +20,13 @@ clause_output='../tmp/wsj_dev.gold.clause.conll06'
 
 echo run_dev_gold.sh
 
-# # baseline
-# python unit_parser_main.py -baseline -train $train_file $sent_parser
-# python unit_parser_main.py -baseline -test $test_file $sent_parser $baseline_output
+# baseline
+python unit_parser_main.py -baseline -train $train_file $sent_parser
+python unit_parser_main.py -baseline -test $test_file $sent_parser $baseline_output
 
-# # baseline + IOB feature
-# python unit_parser_main.py -IOB -train $train_file $IOB_sent_parser
-# python unit_parser_main.py -IOB -test $test_file $IOB_sent_parser $IOB_output
+# baseline + IOB feature
+python unit_parser_main.py -IOB -train $train_file $IOB_sent_parser
+python unit_parser_main.py -IOB -test $test_file $IOB_sent_parser $IOB_output
 
 
 # parse chunk
