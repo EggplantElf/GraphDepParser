@@ -46,10 +46,11 @@ perl eval07.pl -q -p -g $gold -s $baseline_output
 echo IOB
 perl eval07.pl -q -p -g $gold -s $IOB_output
 
+echo it was wrong
 echo $chunk_output
-perl eval07.pl -q -p -g $gold -s chunk_output  
+perl eval07.pl -q -p -g $gold -s $chunk_output  
 
 echo $clause_output
-perl eval07.pl -q -p -g $gold -s clause_output  
+perl eval07.pl -q -p -g $gold -s $clause_output  
 
 
