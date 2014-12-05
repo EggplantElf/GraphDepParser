@@ -13,8 +13,6 @@ clause_sent_parser='../tmp/clause_sent.fold.parser'
 
 baseline_output='../tmp/wsj_dev.fold.baseline.conll06'
 IOB_output='../tmp/wsj_dev.fold.IOB.conll06'
-chunk_output='../tmp/wsj_dev.fold.chunk.conll06'
-clause_output='../tmp/wsj_dev.fold.clause.conll06'
 
 
 
@@ -24,7 +22,7 @@ echo run_dev_fold.sh
 # python unit_parser_main.py -baseline -train $train_file $sent_parser
 # python unit_parser_main.py -baseline -test $test_file $sent_parser $baseline_output
 
-baseline + IOB feature
+# baseline + IOB feature
 python unit_parser_main.py -IOB -train $train_file $IOB_sent_parser
 python unit_parser_main.py -IOB -test $test_file $IOB_sent_parser $IOB_output
 
@@ -63,5 +61,5 @@ for f in 1.1 1.2 1.3 1.5 2 3 5
 do
     echo ../tmp/wsj_dev.clause.fold.$f.conll06
     perl eval07.pl -q -p -g $gold -s ../tmp/wsj_dev.clause.fold.$f.conll06  
-# done
+done
 

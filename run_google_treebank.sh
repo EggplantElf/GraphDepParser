@@ -1,7 +1,6 @@
 
-gold='../data/english/dev/wsj_dev.conll06'
 train_file='../tmp/wsj_train.gold.cx'
-test_file='../tmp/wsj_dev.cx'
+
 
 sent_parser='../tmp/sent.parser'
 IOB_sent_parser='../tmp/IOB_sent.parser'
@@ -15,8 +14,8 @@ clause_sent_parser='../tmp/clause_sent.parser'
 
 python unit_parser_main.py -baseline -train $train_file $sent_parser
 python unit_parser_main.py -IOB -train $train_file $IOB_sent_parser
-python unit_parser_main.py -chunk -train $train_file $chunk_parser $chunk_sent_parser 1
-python unit_parser_main.py -clause -train $train_file $clause_parser $clause_sent_parser 1
+python unit_parser_main.py -chunk -train $train_file $chunk_parser $chunk_sent_parser
+python unit_parser_main.py -clause -train $train_file $clause_parser $clause_sent_parser
 
 
 

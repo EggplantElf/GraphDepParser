@@ -13,8 +13,6 @@ clause_sent_parser='../tmp/clause_sent.gold.parser'
 
 baseline_output='../tmp/wsj_dev.gold.baseline.conll06'
 IOB_output='../tmp/wsj_dev.gold.IOB.conll06'
-chunk_output='../tmp/wsj_dev.gold.chunk.conll06'
-clause_output='../tmp/wsj_dev.gold.clause.conll06'
 
 
 
