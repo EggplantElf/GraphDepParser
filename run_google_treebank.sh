@@ -2,20 +2,19 @@
 train_file='../tmp/wsj_train.gold.cx'
 
 
-sent_parser='../tmp/sent.parser'
-IOB_sent_parser='../tmp/IOB_sent.parser'
-chunk_parser='../tmp/chunk.parser'
-clause_parser='../tmp/clause.parser'
-chunk_sent_parser='../tmp/chunk_sent.parser'
-clause_sent_parser='../tmp/clause_sent.parser'
-
+sent_parser='../tmp/sent.gold.parser'
+IOB_sent_parser='../tmp/IOB_sent.gold.parser'
+chunk_parser='../tmp/chunk.gold.parser'
+clause_parser='../tmp/clause.gold.parser'
+chunk_sent_parser='../tmp/chunk_sent.gold.parser'
+clause_sent_parser='../tmp/clause_sent.gold.parser'
 
 # train
 
-python unit_parser_main.py -baseline -train $train_file $sent_parser
-python unit_parser_main.py -IOB -train $train_file $IOB_sent_parser
-python unit_parser_main.py -chunk -train $train_file $chunk_parser $chunk_sent_parser
-python unit_parser_main.py -clause -train $train_file $clause_parser $clause_sent_parser
+# python unit_parser_main.py -baseline -train $train_file $sent_parser
+# python unit_parser_main.py -IOB -train $train_file $IOB_sent_parser
+# python unit_parser_main.py -chunk -train $train_file $chunk_parser $chunk_sent_parser
+# python unit_parser_main.py -clause -train $train_file $clause_parser $clause_sent_parser
 
 
 
@@ -27,7 +26,7 @@ do
     IOB_output=../tmp/$g.IOB.conll06
     chunk_output=../tmp/$g.chunk.conll06
     clause_output=../tmp/$g.clause.conll06
-
+    echo $g
     # baseline
     python unit_parser_main.py -baseline -test $test_file $sent_parser $baseline_output
 

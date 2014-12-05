@@ -22,8 +22,8 @@ clause_output=../tmp/wsj_test.clause.fold.$f2.conll06
 echo run-test.sh
 
 # # baseline
-python unit_parser_main.py -baseline -train $train_file $sent_parser
-# python unit_parser_main.py -baseline -test $test_file $sent_parser $baseline_output
+# python unit_parser_main.py -baseline -train $train_file $sent_parser
+python unit_parser_main.py -baseline -test $test_file $sent_parser $baseline_output
 
 # baseline + IOB
 # python unit_parser_main.py -IOB -train $train_file $IOB_sent_parser
