@@ -36,7 +36,7 @@ do
     python unit_parser_main.py -IOB -test $test_file $IOB_sent_parser $IOB_output
 
     # parse chunk
-    python unit_parser_main.py -chunk -test $test_file $chunk_parser $chunk_sent_parser $chunk_output 1.3
+    python unit_parser_main.py -chunk -test $test_file $chunk_parser $chunk_sent_parser $chunk_output 1.2
 
     # parse clause
     python unit_parser_main.py -clause -test $test_file $clause_parser $clause_sent_parser $clause_output 1.2
