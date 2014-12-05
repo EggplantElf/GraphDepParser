@@ -15,14 +15,14 @@ def get_chunks(sent, train = False):
     chunks.append(chunk)
 
     # in training mode, get only the "good" chunk
-    if train:
-        good_chunks = []
-        for chunk in chunks:
-            if check(sent, chunk):
-                good_chunks.append(chunk)
-            else:
-                good_chunks.extend([[t] for t in chunk])
-        chunks = good_chunks
+    # if train:
+    #     good_chunks = []
+    #     for chunk in chunks:
+    #         if check(sent, chunk):
+    #             good_chunks.append(chunk)
+    #         else:
+    #             good_chunks.extend([[t] for t in chunk])
+    #     chunks = good_chunks
 
 
     # only return chunks with more than one token
@@ -40,14 +40,14 @@ def get_clauses(sent, train = False):
         else:
             clause.append(t)
     # special treatment for train mode?
-    if train:
-        good_clauses = []
-        for clause in clauses:
-            if check(sent, clause):
-                good_clauses.append(clause)
-            else:
-                good_clauses.extend([[t] for t in clause])
-        clauses = good_clauses
+    # if train:
+    #     good_clauses = []
+    #     for clause in clauses:
+    #         if check(sent, clause):
+    #             good_clauses.append(clause)
+    #         else:
+    #             good_clauses.extend([[t] for t in clause])
+    #     clauses = good_clauses
     return filter(lambda x: len(x) > 1, clauses)
 
 

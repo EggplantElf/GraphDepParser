@@ -31,11 +31,11 @@ python unit_parser_main.py -baseline -test $test_file $sent_parser $baseline_out
 python unit_parser_main.py -IOB -test $test_file $IOB_sent_parser $IOB_output
 
 # parse chunk
-# python unit_parser_main.py -chunk -train $train_file $chunk_parser $chunk_sent_parser 
+python unit_parser_main.py -chunk -train $train_file $chunk_parser $chunk_sent_parser 
 python unit_parser_main.py -chunk -test $test_file $chunk_parser $chunk_sent_parser $chunk_output $f1
 
 # parse clause
-# python unit_parser_main.py -clause -train $train_file $clause_parser $clause_sent_parser 
+python unit_parser_main.py -clause -train $train_file $clause_parser $clause_sent_parser 
 python unit_parser_main.py -clause -test $test_file $clause_parser $clause_sent_parser $clause_output $f2
 
 
