@@ -14,7 +14,7 @@ clause_sent_parser='../tmp/clause_sent.gold.parser'
 baseline_output='../tmp/wsj_test.gold.baseline.conll06'
 IOB_output='../tmp/wsj_test.gold.IOB.conll06'
 
-f1=1.3
+f1=1.2
 f2=1.2
 chunk_output=../tmp/wsj_test.chunk.gold.$f1.conll06
 clause_output=../tmp/wsj_test.clause.gold.$f2.conll06
@@ -24,11 +24,11 @@ echo run-test.sh
 
 # # baseline
 # python unit_parser_main.py -baseline -train $train_file $sent_parser
-# python unit_parser_main.py -baseline -test $test_file $sent_parser $baseline_output
+python unit_parser_main.py -baseline -test $test_file $sent_parser $baseline_output
 
 # baseline + IOB
 # python unit_parser_main.py -IOB -train $train_file $IOB_sent_parser
-# python unit_parser_main.py -IOB -test $test_file $IOB_sent_parser $IOB_output
+python unit_parser_main.py -IOB -test $test_file $IOB_sent_parser $IOB_output
 
 # parse chunk
 python unit_parser_main.py -chunk -train $train_file $chunk_parser $chunk_sent_parser 
