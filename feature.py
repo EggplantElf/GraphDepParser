@@ -152,40 +152,44 @@ def make_features_for_parser(sent, unigrams, h, d, map_func, feats):
     if 'b' in feats:
         hc = sent[h].ctag.split('-')[-1]
         dc = sent[d].ctag.split('-')[-1]
-        # hboc = sent[h].boc
-        # dboc = sent[d].boc
-        # heoc = sent[h].eoc
-        # deoc = sent[d].eoc
+        hboc = sent[h].boc
+        dboc = sent[d].boc
+        heoc = sent[h].eoc
+        deoc = sent[d].eoc
         eoc = 'eoc(%s~%s~%d~%d)~' % (hc, dc, sent[h].eoc, sent[d].eoc)
         boc = 'boc(%s~%s~%d~%d)~' % (hc, dc, sent[h].boc, sent[d].boc)
         same = 'same~' if sent[h].cnum == sent[d].cnum else 'diff~'
-        # ctype = '(%s~%s)~' % (sent[h].ctag, sent[d].ctag)
-        # fred = '(%s~%s~%d~%d~%d~%d)~' % (hc, dc, hboc, heoc, dboc, deoc)
+        iob = '(%s~%s)~' % (sent[h].ctag, sent[d].ctag)
+        fred = '(%s~%s~%d~%d~%d~%d)~' % (hc, dc, hboc, heoc, dboc, deoc)
         # h01c = sent[h-1].ctag if h >= 1 else '<NA>'
         # h11c = sent[h+1].ctag if h + 1 < len(sent) else '<NA>'
         # d01c = sent[d-1].ctag if d >= 1 else '<NA>'
         # d11c = sent[d+1].ctag if d + 1 < len(sent) else '<NA>'
 
-        # 1
-        # features.append(map_func('$ya~'+ frog + fred))
-        # features.append(map_func('$yb~'+ frog + fred + 'hpos~dpos:%s~%s' % (hpos, dpos)))
-
-        # 2
-        # features.append(map_func('$yc~'+ frog + same + fred))
-        # features.append(map_func('$yd~'+ frog + same + fred + 'hpos~dpos:%s~%s' % (hpos, dpos)))
-        # # # 3
-        # features.append(map_func('$ye~'+ frog + ctype))
-        # features.append(map_func('$yf~'+ frog + ctype + 'hpos~dpos:%s~%s' % (hpos, dpos)))
-        # # # 4
-        # features.append(map_func('$yg~'+ frog + same+ ctype))
-        # features.append(map_func('$yh~'+ frog + same+ ctype + 'hpos~dpos:%s~%s' % (hpos, dpos)))
-        # 5
-        # features.append(map_func('$yi~'+ frog + eoc))
-        # features.append(map_func('$yj~'+ frog + eoc + 'hpos~dpos:%s~%s' % (hpos, dpos)))
-
-        # # 6
-        features.append(map_func('$yi~'+ frog + same + eoc))
-        features.append(map_func('$yj~'+ frog + same + eoc + 'hpos~dpos:%s~%s' % (hpos, dpos)))
+        if '1' in features:
+            features.append(map_func('$ye~'+ frog + iob))
+            features.append(map_func('$yf~'+ frog + iob + 'hpos~dpos:%s~%s' % (hpos, dpos)))
+        if '2' in features:
+            features.append(map_func('$yg~'+ frog + same+ iob))
+            features.append(map_func('$yh~'+ frog + same+ iob + 'hpos~dpos:%s~%s' % (hpos, dpos)))
+        if '3' in features:
+            features.append(map_func('$yi~'+ frog + boc))
+            features.append(map_func('$yj~'+ frog + boc + 'hpos~dpos:%s~%s' % (hpos, dpos)))
+        if '4' in features:
+            features.append(map_func('$yi~'+ frog + same + boc))
+            features.append(map_func('$yj~'+ frog + same + boc + 'hpos~dpos:%s~%s' % (hpos, dpos)))
+        if '5' in features:
+            features.append(map_func('$yi~'+ frog + eoc))
+            features.append(map_func('$yj~'+ frog + eoc + 'hpos~dpos:%s~%s' % (hpos, dpos)))
+        if '6' in features:
+            features.append(map_func('$yi~'+ frog + same + eoc))
+            features.append(map_func('$yj~'+ frog + same + eoc + 'hpos~dpos:%s~%s' % (hpos, dpos)))
+        if '7' in features:
+            features.append(map_func('$ya~'+ frog + fred))
+            features.append(map_func('$yb~'+ frog + fred + 'hpos~dpos:%s~%s' % (hpos, dpos)))
+        if '8' in features:
+            features.append(map_func('$yc~'+ frog + same + fred))
+            features.append(map_func('$yd~'+ frog + same + fred + 'hpos~dpos:%s~%s' % (hpos, dpos)))
 
 
 

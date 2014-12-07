@@ -77,6 +77,21 @@ if __name__ == '__main__':
             output_file = sys.argv[5]
             test(test_file, None, sent_parser_model, output_file, None, sent_feats)
 
+
+    elif flag.startswith('-fa'):
+        sent_feats = 'ab'+flag[4]
+        if mode == '-train':
+            train_file = sys.argv[3]
+            sent_parser_model = sys.argv[4]
+            train(train_file, None, sent_parser_model, None, sent_feats)
+        elif mode == '-test':
+            test_file = sys.argv[3]
+            sent_parser_model = sys.argv[4]
+            output_file = sys.argv[5]
+            test(test_file, None, sent_parser_model, output_file, None, sent_feats)
+
+
+
     elif flag == '-chunk' or flag == '-clause':
         unit_feats = 'a'
         sent_feats = 'ad'
