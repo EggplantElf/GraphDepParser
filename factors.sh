@@ -20,8 +20,8 @@ echo run_dev_fold.sh
 for i in 1 2 3 4 5 6 7 8
 do
     IOB_output=../tmp/wsj_dev.fac.$i.conll06
-    python unit_parser_main.py -IOB -train $train_file $IOB_sent_parser
-    python unit_parser_main.py -IOB -test $test_file $IOB_sent_parser $IOB_output
+    python unit_parser_main.py -fa$i -train $train_file $IOB_sent_parser
+    python unit_parser_main.py -fa$i -test $test_file $IOB_sent_parser $IOB_output
 done
 
 
