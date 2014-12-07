@@ -66,7 +66,7 @@ if __name__ == '__main__':
             test(test_file, None, sent_parser_model, output_file, None, sent_feats)
 
     elif flag == '-IOB':
-        sent_feats = 'ab'
+        sent_feats = 'ab4'
         if mode == '-train':
             train_file = sys.argv[3]
             sent_parser_model = sys.argv[4]
