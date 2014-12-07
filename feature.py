@@ -166,28 +166,28 @@ def make_features_for_parser(sent, unigrams, h, d, map_func, feats):
         # d01c = sent[d-1].ctag if d >= 1 else '<NA>'
         # d11c = sent[d+1].ctag if d + 1 < len(sent) else '<NA>'
 
-        if '1' in features:
+        if '1' in feats:
             features.append(map_func('$ye~'+ frog + iob))
             features.append(map_func('$yf~'+ frog + iob + 'hpos~dpos:%s~%s' % (hpos, dpos)))
-        if '2' in features:
+        if '2' in feats:
             features.append(map_func('$yg~'+ frog + same+ iob))
             features.append(map_func('$yh~'+ frog + same+ iob + 'hpos~dpos:%s~%s' % (hpos, dpos)))
-        if '3' in features:
+        if '3' in feats:
             features.append(map_func('$yi~'+ frog + boc))
             features.append(map_func('$yj~'+ frog + boc + 'hpos~dpos:%s~%s' % (hpos, dpos)))
-        if '4' in features:
+        if '4' in feats:
             features.append(map_func('$yi~'+ frog + same + boc))
             features.append(map_func('$yj~'+ frog + same + boc + 'hpos~dpos:%s~%s' % (hpos, dpos)))
-        if '5' in features:
+        if '5' in feats:
             features.append(map_func('$yi~'+ frog + eoc))
             features.append(map_func('$yj~'+ frog + eoc + 'hpos~dpos:%s~%s' % (hpos, dpos)))
-        if '6' in features:
+        if '6' in feats:
             features.append(map_func('$yi~'+ frog + same + eoc))
             features.append(map_func('$yj~'+ frog + same + eoc + 'hpos~dpos:%s~%s' % (hpos, dpos)))
-        if '7' in features:
+        if '7' in feats:
             features.append(map_func('$ya~'+ frog + fred))
             features.append(map_func('$yb~'+ frog + fred + 'hpos~dpos:%s~%s' % (hpos, dpos)))
-        if '8' in features:
+        if '8' in feats:
             features.append(map_func('$yc~'+ frog + same + fred))
             features.append(map_func('$yd~'+ frog + same + fred + 'hpos~dpos:%s~%s' % (hpos, dpos)))
 
