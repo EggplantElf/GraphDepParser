@@ -79,7 +79,7 @@ if __name__ == '__main__':
 
 
     elif flag.startswith('-fa'):
-        sent_feats = 'ab'+flag[4]
+        sent_feats = 'ab'+flag[3]
         if mode == '-train':
             train_file = sys.argv[3]
             sent_parser_model = sys.argv[4]
