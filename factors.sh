@@ -2,7 +2,7 @@
 gold='../data/english/dev/wsj_dev.conll06'
 train_file='../tmp/wsj_train.fold.cx'
 test_file='../tmp/wsj_dev.cx'
-
+i=$1
 
 echo run_dev_fold.sh
 
