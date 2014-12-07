@@ -4,7 +4,7 @@ train_file='../tmp/wsj_train.fold.cx'
 test_file='../tmp/wsj_dev.cx'
 i=$1
 
-echo run_dev_fold.sh
+echo $i
 
 IOB_output=../tmp/wsj_dev.fac.$i.conll06
 IOB_sent_parser=../tmp/fac.$i.parser

@@ -167,6 +167,7 @@ def make_features_for_parser(sent, unigrams, h, d, map_func, feats):
         # d11c = sent[d+1].ctag if d + 1 < len(sent) else '<NA>'
 
         if '1' in features:
+            print 'frog + iob'
             features.append(map_func('$ye~'+ frog + iob))
             features.append(map_func('$yf~'+ frog + iob + 'hpos~dpos:%s~%s' % (hpos, dpos)))
         if '2' in features:
